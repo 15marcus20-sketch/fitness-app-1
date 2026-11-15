@@ -1,0 +1,20 @@
+{
+  "name": "on-track-fitness",
+  "version": "1.0.0",
+  "description": "ON TRACK - Precision Session Builder, Workout Timer & Movement Library",
+  "main": "index.html",
+  "scripts": {
+    "prepare-assets": "mkdir -p www && cp -R index.html manifest.webmanifest sw.js css js icons www/",
+    "cap:add": "npm run prepare-assets && npx cap add android",
+    "cap:sync": "npm run prepare-assets && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:build-apk": "npm run prepare-assets && npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}

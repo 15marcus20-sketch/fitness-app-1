@@ -1,0 +1,742 @@
+/* ==========================================================================
+   STICK-FIGURE BIOMECHANICAL ANIMATIONS (Side-Profile Rig)
+   Rig geometry:
+     - Hip origin: (60, 90)
+     - Torso segment: length 50 (points UP to shoulders at 0, -50)
+     - Head: center cx=0, cy=-14 from shoulders (radius 9)
+     - Arms: upperarm length 22, forearm length 21 (pivot at shoulders)
+     - Legs: thigh length 30, shin length 27 (pivot at hips)
+     - Standing floor line: y = 147 (90 + 30 + 27 = 147)
+   Conventions:
+     - Figure faces +x (right).
+     - Limbs hang straight down at 0 deg. Negative rotation = swing forward (+x); positive rotation = swing back (-x).
+     - Torso points straight up at 0 deg. Positive rotation = lean forward (+x); negative = lean backward (-x).
+     - Knees flex with POSITIVE rotation (shin moves backward toward thigh).
+     - Elbows flex with NEGATIVE rotation (forearm curls forward/upward toward upper arm).
+   ========================================================================== */
+
+.illustration {
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+.illustration .seg {
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+  fill: none;
+}
+.illustration.mini .seg {
+  stroke: var(--meter);
+}
+.illustration.small .seg {
+  stroke-width: 7;
+}
+
+.illustration .rig,
+.illustration .bodyRotate,
+.illustration .upperBody,
+.illustration .armL,
+.illustration .armR,
+.illustration .elbowL,
+.illustration .elbowR,
+.illustration .legL,
+.illustration .legR,
+.illustration .kneeL,
+.illustration .kneeR {
+  transform-box: view-box;
+  transform-origin: 0px 0px;
+}
+
+/* Common breathing & subtle pulse helpers */
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes swayTiny {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* ==========================================================================
+   1. SQUAT: Biomechanically calibrated hip hinge, parallel depth, counter-balance arms
+   ========================================================================== */
+.anim-squat .rig { animation: sq-rig 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-squat .upperBody { animation: sq-ub 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-squat .legL, .anim-squat .legR { animation: sq-leg 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-squat .kneeL, .anim-squat .kneeR { animation: sq-knee 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-squat .armL, .anim-squat .armR { animation: sq-arm 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+@keyframes sq-rig {
+  0%, 100% { transform: translate(0, 0); }
+  10%      { transform: translate(-4px, 3px); }
+  45%, 55% { transform: translate(-32px, 26px); } /* Deep parallel hold */
+  85%      { transform: translate(-6px, 4px); }
+}
+@keyframes sq-ub {
+  0%, 100% { transform: rotate(4deg); }
+  45%, 55% { transform: rotate(32deg); } /* Torso hinges forward for balance */
+}
+@keyframes sq-leg {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-78deg); } /* Thigh parallel to ground */
+}
+@keyframes sq-knee {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(72deg); }  /* Shin stays stable over foot */
+}
+@keyframes sq-arm {
+  0%, 100% { transform: rotate(4deg); }
+  45%, 55% { transform: rotate(-95deg); } /* Arms reach forward at shoulder level */
+}
+
+/* ==========================================================================
+   2. LUNGE: Split stance, 90/90 knee bend, vertical torso & running arm counter-balance
+   ========================================================================== */
+.anim-lunge .rig { animation: lg-rig 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .upperBody { animation: lg-ub 1.8s ease-in-out infinite; }
+.anim-lunge .legL { animation: lg-front 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .kneeL { animation: lg-fknee 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .legR { animation: lg-back 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .kneeR { animation: lg-bknee 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .armL { animation: lg-armL 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .armR { animation: lg-armR 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-lunge .elbowL, .anim-lunge .elbowR { transform: rotate(-70deg); }
+
+@keyframes lg-rig {
+  0%, 100% { transform: translate(0, 10px); }
+  45%, 55% { transform: translate(0, 25px); } /* Hips drop down directly */
+}
+@keyframes lg-ub {
+  0%, 100% { transform: rotate(2deg); }
+  50%      { transform: rotate(6deg); }
+}
+@keyframes lg-front {
+  0%, 100% { transform: rotate(-35deg); }
+  45%, 55% { transform: rotate(-80deg); } /* Front thigh horizontal */
+}
+@keyframes lg-fknee {
+  0%, 100% { transform: rotate(15deg); }
+  45%, 55% { transform: rotate(78deg); }  /* Front shin vertical */
+}
+@keyframes lg-back {
+  0%, 100% { transform: rotate(35deg); }
+  45%, 55% { transform: rotate(12deg); }  /* Back thigh drops straight down */
+}
+@keyframes lg-bknee {
+  0%, 100% { transform: rotate(10deg); }
+  45%, 55% { transform: rotate(78deg); }  /* Back knee hovers just above floor */
+}
+@keyframes lg-armL {
+  0%, 100% { transform: rotate(15deg); }
+  45%, 55% { transform: rotate(35deg); }
+}
+@keyframes lg-armR {
+  0%, 100% { transform: rotate(-25deg); }
+  45%, 55% { transform: rotate(-45deg); }
+}
+
+/* ==========================================================================
+   3. PUSH-UP: Straight plank pivot on toes, elbows tuck back, hands planted
+   ========================================================================== */
+.anim-pushup .rig { animation: pu-rig 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pushup .bodyRotate { animation: pu-body 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pushup .armL, .anim-pushup .armR { animation: pu-arm 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pushup .elbowL, .anim-pushup .elbowR { animation: pu-elbow 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+@keyframes pu-rig {
+  0%, 100% { transform: translate(0, 34px); }
+  45%, 55% { transform: translate(2px, 42px); } /* Chest touches close to floor */
+}
+@keyframes pu-body {
+  0%, 100% { transform: rotate(66deg); }
+  45%, 55% { transform: rotate(73.5deg); }
+}
+@keyframes pu-arm {
+  0%, 100% { transform: rotate(-66deg); }
+  45%, 55% { transform: rotate(-22deg); }
+}
+@keyframes pu-elbow {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-92deg); }
+}
+
+/* ==========================================================================
+   4. PLANK & SIDE PLANK: Solid isometric core engagement & controlled breath
+   ========================================================================== */
+.anim-plank .rig { animation: pl-rig 3.2s ease-in-out infinite; }
+.anim-plank .bodyRotate { transform: rotate(78deg); }
+.anim-plank .armL, .anim-plank .armR { transform: rotate(-78deg); }
+.anim-plank .elbowL, .anim-plank .elbowR { transform: rotate(-90deg); }
+.anim-plank .upperBody { animation: pl-core 3.2s ease-in-out infinite; }
+
+@keyframes pl-rig {
+  0%, 100% { transform: translate(3.5px, 45px); }
+  50%      { transform: translate(3.5px, 43.5px); }
+}
+@keyframes pl-core {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(1deg); }
+}
+
+.anim-sideplank .bodyRotate { transform: rotate(66deg); }
+.anim-sideplank .armL { transform: rotate(-66deg); }
+.anim-sideplank .armR { transform: rotate(114deg); }
+.anim-sideplank .rig { animation: sp-rig 3s ease-in-out infinite; }
+@keyframes sp-rig {
+  0%, 100% { transform: translate(0, 34px); }
+  50%      { transform: translate(0, 31px); }
+}
+
+/* ==========================================================================
+   5. JUMPING JACK: Two distinct springy hops per rep, landing compression & overhead sweep
+   ========================================================================== */
+.anim-jumpingjack .rig { animation: jj-bounce 1s cubic-bezier(0.3, 0, 0.7, 1) infinite; }
+.anim-jumpingjack .armL, .anim-jumpingjack .armR { animation: jj-arms 1s ease-in-out infinite; }
+.anim-jumpingjack .legL { animation: jj-legL 1s ease-in-out infinite; }
+.anim-jumpingjack .legR { animation: jj-legR 1s ease-in-out infinite; }
+.anim-jumpingjack .kneeL, .anim-jumpingjack .kneeR { animation: jj-knees 1s ease-in-out infinite; }
+
+@keyframes jj-bounce {
+  0%   { transform: translateY(0); }
+  22%  { transform: translateY(-14px); } /* Hop 1 in air */
+  48%  { transform: translateY(2px); }   /* Wide landing compression */
+  72%  { transform: translateY(-14px); } /* Hop 2 in air */
+  96%  { transform: translateY(2px); }   /* Narrow landing compression */
+  100% { transform: translateY(0); }
+}
+@keyframes jj-arms {
+  0%, 100% { transform: rotate(6deg); }
+  45%, 55% { transform: rotate(-172deg); } /* Hands clap overhead */
+}
+@keyframes jj-legL {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-22deg); } /* Legs open scissor */
+}
+@keyframes jj-legR {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(22deg); }
+}
+@keyframes jj-knees {
+  0%, 100% { transform: rotate(0deg); }
+  22%, 72% { transform: rotate(6deg); }
+  48%, 96% { transform: rotate(14deg); } /* Absorbs shock on landing */
+}
+
+/* ==========================================================================
+   6. HIGH KNEES: Springy sprinting gait, 90-deg knee drive & aggressive arm pump
+   ========================================================================== */
+.anim-highknees .upperBody { transform: rotate(8deg); }
+.anim-highknees .elbowL, .anim-highknees .elbowR { transform: rotate(-85deg); }
+.anim-highknees .rig { animation: hk-bounce 0.7s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.anim-highknees .legL { animation: hk-legL 0.7s ease-in-out infinite; }
+.anim-highknees .kneeL { animation: hk-kneeL 0.7s ease-in-out infinite; }
+.anim-highknees .legR { animation: hk-legR 0.7s ease-in-out infinite; }
+.anim-highknees .kneeR { animation: hk-kneeR 0.7s ease-in-out infinite; }
+.anim-highknees .armL { animation: hk-armL 0.7s ease-in-out infinite; }
+.anim-highknees .armR { animation: hk-armR 0.7s ease-in-out infinite; }
+
+@keyframes hk-bounce {
+  0%, 50%, 100% { transform: translateY(0); }
+  25%, 75%      { transform: translateY(-7px); } /* Airborne flight between strides */
+}
+@keyframes hk-legL {
+  0%, 50%, 100% { transform: rotate(5deg); }
+  25%           { transform: rotate(-92deg); } /* Knee drives up to hip height */
+}
+@keyframes hk-kneeL {
+  0%, 50%, 100% { transform: rotate(10deg); }
+  25%           { transform: rotate(88deg); }  /* Calf drops vertical */
+}
+@keyframes hk-legR {
+  0%, 50%, 100% { transform: rotate(5deg); }
+  75%           { transform: rotate(-92deg); }
+}
+@keyframes hk-kneeR {
+  0%, 50%, 100% { transform: rotate(10deg); }
+  75%           { transform: rotate(88deg); }
+}
+@keyframes hk-armL {
+  0%, 50%, 100% { transform: rotate(-10deg); }
+  25%           { transform: rotate(45deg); }
+  75%           { transform: rotate(-65deg); }
+}
+@keyframes hk-armR {
+  0%, 50%, 100% { transform: rotate(-10deg); }
+  25%           { transform: rotate(-65deg); }
+  75%           { transform: rotate(45deg); }
+}
+
+/* ==========================================================================
+   7. MOUNTAIN CLIMBER: Dynamic horizontal sprint with reactive hip bounce
+   ========================================================================== */
+.anim-mountainclimber .rig { animation: mc-rig 0.75s ease-in-out infinite; }
+.anim-mountainclimber .bodyRotate { transform: rotate(66deg); }
+.anim-mountainclimber .armL, .anim-mountainclimber .armR { transform: rotate(-66deg); }
+.anim-mountainclimber .legL { animation: mc-legL 0.75s ease-in-out infinite; }
+.anim-mountainclimber .kneeL { animation: mc-kneeL 0.75s ease-in-out infinite; }
+.anim-mountainclimber .legR { animation: mc-legR 0.75s ease-in-out infinite; }
+.anim-mountainclimber .kneeR { animation: mc-kneeR 0.75s ease-in-out infinite; }
+
+@keyframes mc-rig {
+  0%, 50%, 100% { transform: translate(0, 34px); }
+  25%, 75%      { transform: translate(0, 31px); } /* Slight hip rebound */
+}
+@keyframes mc-legL {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(-126deg); } /* Piston drive toward chest */
+}
+@keyframes mc-kneeL {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(132deg); }
+}
+@keyframes mc-legR {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  75%           { transform: rotate(-126deg); }
+}
+@keyframes mc-kneeR {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  75%           { transform: rotate(132deg); }
+}
+
+/* ==========================================================================
+   8. BURPEE: 5-Stage kinematic chain (stand -> drop -> kick -> hop -> jump)
+   ========================================================================== */
+.anim-burpee .rig { animation: bp-rig 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-burpee .bodyRotate { animation: bp-body 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-burpee .upperBody { animation: bp-ub 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-burpee .legL, .anim-burpee .legR { animation: bp-leg 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-burpee .kneeL, .anim-burpee .kneeR { animation: bp-knee 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-burpee .armL, .anim-burpee .armR { animation: bp-arm 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+@keyframes bp-rig {
+  0%         { transform: translate(0, 0); }
+  18%        { transform: translate(-10px, 36px); } /* Squat hands down */
+  34%, 50%   { transform: translate(0, 34px); }     /* Kick back into plank */
+  64%        { transform: translate(-10px, 36px); } /* Hop feet back in */
+  82%, 90%   { transform: translate(0, -16px); }    /* Vertical explosive leap */
+  100%       { transform: translate(0, 0); }
+}
+@keyframes bp-body {
+  0%, 18%    { transform: rotate(0deg); }
+  34%, 50%   { transform: rotate(66deg); }          /* Horizontal plank */
+  64%, 100%  { transform: rotate(0deg); }
+}
+@keyframes bp-ub {
+  0%         { transform: rotate(4deg); }
+  18%        { transform: rotate(50deg); }
+  34%, 50%   { transform: rotate(0deg); }
+  64%        { transform: rotate(50deg); }
+  82%, 90%   { transform: rotate(0deg); }
+  100%       { transform: rotate(4deg); }
+}
+@keyframes bp-leg {
+  0%         { transform: rotate(0deg); }
+  18%        { transform: rotate(-85deg); }
+  34%, 50%   { transform: rotate(0deg); }
+  64%        { transform: rotate(-85deg); }
+  78%, 100%  { transform: rotate(0deg); }
+}
+@keyframes bp-knee {
+  0%         { transform: rotate(0deg); }
+  18%        { transform: rotate(72deg); }
+  34%, 50%   { transform: rotate(0deg); }
+  64%        { transform: rotate(72deg); }
+  78%, 100%  { transform: rotate(0deg); }
+}
+@keyframes bp-arm {
+  0%         { transform: rotate(4deg); }
+  18%        { transform: rotate(-75deg); }
+  34%, 50%   { transform: rotate(-66deg); }
+  64%        { transform: rotate(-75deg); }
+  82%, 90%   { transform: rotate(-174deg); }        /* Arms clap overhead in midair */
+  100%       { transform: rotate(4deg); }
+}
+
+/* ==========================================================================
+   9. SIT-UP & CORE TWIST: Lumbar curl & oblique rotational dynamics
+   ========================================================================== */
+.anim-situp .rig { transform: translate(20px, 55px); }
+.anim-situp .legL, .anim-situp .legR { transform: rotate(-135deg); }
+.anim-situp .kneeL, .anim-situp .kneeR { transform: rotate(90deg); }
+.anim-situp .armL, .anim-situp .armR { transform: rotate(-90deg); }
+.anim-situp .upperBody { animation: su-ub 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes su-ub {
+  0%, 100% { transform: rotate(-84deg); }
+  45%, 55% { transform: rotate(24deg); } /* Curls up to knees */
+}
+
+.anim-twist .rig { transform: translate(0, 55px); }
+.anim-twist .upperBody { transform: rotate(-30deg); }
+.anim-twist .legL, .anim-twist .legR { transform: rotate(-120deg); }
+.anim-twist .kneeL, .anim-twist .kneeR { transform: rotate(90deg); }
+.anim-twist .elbowL, .anim-twist .elbowR { transform: rotate(-25deg); }
+.anim-twist .armL, .anim-twist .armR { animation: tw-arm 1.6s ease-in-out infinite; }
+@keyframes tw-arm {
+  0%, 100% { transform: rotate(-35deg); }
+  50%      { transform: rotate(-85deg); }
+}
+
+/* ==========================================================================
+   10. ARM CURL, OVERHEAD PRESS, ROW & DIP: Pure upper body biomechanics
+   ========================================================================== */
+.anim-curlArm .armL, .anim-curlArm .armR { transform: rotate(5deg); }
+.anim-curlArm .elbowL, .anim-curlArm .elbowR { animation: cu-elbow 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes cu-elbow {
+  0%, 100% { transform: rotate(0deg); }
+  40%, 55% { transform: rotate(-138deg); } /* Peak bicep squeeze with pause */
+}
+
+.anim-pressArm .armL, .anim-pressArm .armR { animation: pr-arm 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pressArm .elbowL, .anim-pressArm .elbowR { animation: pr-elbow 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes pr-arm {
+  0%, 100% { transform: rotate(-70deg); }
+  45%, 55% { transform: rotate(-174deg); } /* Full extension overhead */
+}
+@keyframes pr-elbow {
+  0%, 100% { transform: rotate(-100deg); }
+  45%, 55% { transform: rotate(0deg); }    /* Elbow lockout overhead */
+}
+
+.anim-rowArm .rig { transform: translate(-8px, 2px); }
+.anim-rowArm .upperBody { transform: rotate(45deg); }
+.anim-rowArm .legL, .anim-rowArm .legR { transform: rotate(-20deg); }
+.anim-rowArm .kneeL, .anim-rowArm .kneeR { transform: rotate(25deg); }
+.anim-rowArm .armL, .anim-rowArm .armR { animation: rw-arm 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-rowArm .elbowL, .anim-rowArm .elbowR { animation: rw-elbow 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes rw-arm {
+  0%, 100% { transform: rotate(-45deg); }
+  45%, 55% { transform: rotate(25deg); }   /* Elbows pull high past torso */
+}
+@keyframes rw-elbow {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-75deg); }
+}
+
+.anim-dip .rig { animation: dp-rig 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-dip .legL, .anim-dip .legR { animation: dp-leg 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-dip .armL, .anim-dip .armR { animation: dp-arm 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-dip .elbowL, .anim-dip .elbowR { animation: dp-elbow 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes dp-rig {
+  0%, 100% { transform: translateY(21px); }
+  45%, 55% { transform: translateY(33px); } /* Torso descends */
+}
+@keyframes dp-leg {
+  0%, 100% { transform: rotate(-51deg); }
+  45%, 55% { transform: rotate(-65deg); }
+}
+@keyframes dp-arm {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(52deg); }
+}
+@keyframes dp-elbow {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-82deg); }  /* Triceps bend to 90 deg */
+}
+
+/* ==========================================================================
+   11. PULL-UP & HIP BRIDGE: Vertical pull & posterior chain lift
+   ========================================================================== */
+.anim-pullup .legL, .anim-pullup .legR { transform: rotate(4deg); }
+.anim-pullup .kneeL, .anim-pullup .kneeR { transform: rotate(20deg); }
+.anim-pullup .rig { animation: pv-rig 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pullup .armL, .anim-pullup .armR { animation: pv-arm 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-pullup .elbowL, .anim-pullup .elbowR { animation: pv-elbow 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes pv-rig {
+  0%, 100% { transform: translateY(12px); }
+  45%, 55% { transform: translateY(-12px); } /* Chin clears bar */
+}
+@keyframes pv-arm {
+  0%, 100% { transform: rotate(-172deg); }
+  45%, 55% { transform: rotate(-110deg); }
+}
+@keyframes pv-elbow {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-125deg); }
+}
+
+.anim-bridge .armL, .anim-bridge .armR { transform: rotate(0deg); }
+.anim-bridge .rig { animation: br-rig 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-bridge .bodyRotate { animation: br-body 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-bridge .legL, .anim-bridge .legR { animation: br-leg 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.anim-bridge .kneeL, .anim-bridge .kneeR { animation: br-knee 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes br-rig {
+  0%, 100% { transform: translate(28px, 55px); }
+  45%, 55% { transform: translate(25px, 39px); } /* Hips elevate */
+}
+@keyframes br-body {
+  0%, 100% { transform: rotate(-90deg); }
+  45%, 55% { transform: rotate(-110deg); } /* Straight line knee-hip-shoulder */
+}
+@keyframes br-leg {
+  0%, 100% { transform: rotate(-45deg); }
+  45%, 55% { transform: rotate(0deg); }
+}
+@keyframes br-knee {
+  0%, 100% { transform: rotate(97deg); }
+  45%, 55% { transform: rotate(82deg); }
+}
+
+/* ==========================================================================
+   12. STEP-UP & JUMP ROPE
+   ========================================================================== */
+.anim-stepup .upperBody { transform: rotate(6deg); }
+.anim-stepup .elbowL, .anim-stepup .elbowR { transform: rotate(-60deg); }
+.anim-stepup .rig { animation: st-rig 1.6s ease-in-out infinite; }
+.anim-stepup .legL { animation: st-legL 1.6s ease-in-out infinite; }
+.anim-stepup .kneeL { animation: st-kneeL 1.6s ease-in-out infinite; }
+.anim-stepup .legR { animation: st-legR 1.6s ease-in-out infinite; }
+.anim-stepup .kneeR { animation: st-kneeR 1.6s ease-in-out infinite; }
+.anim-stepup .armL { animation: st-armL 1.6s ease-in-out infinite; }
+.anim-stepup .armR { animation: st-armR 1.6s ease-in-out infinite; }
+@keyframes st-rig {
+  0%, 50%, 100% { transform: translateY(0); }
+  25%, 75%      { transform: translateY(-5px); }
+}
+@keyframes st-legL {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(-68deg); }
+}
+@keyframes st-kneeL {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(72deg); }
+}
+@keyframes st-legR {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  75%           { transform: rotate(-68deg); }
+}
+@keyframes st-kneeR {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  75%           { transform: rotate(72deg); }
+}
+@keyframes st-armL {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(25deg); }
+  75%           { transform: rotate(-30deg); }
+}
+@keyframes st-armR {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  25%           { transform: rotate(-30deg); }
+  75%           { transform: rotate(25deg); }
+}
+
+.anim-jumprope .armL, .anim-jumprope .armR { transform: rotate(8deg); }
+.anim-jumprope .rig { animation: jr-rig 0.5s ease-in-out infinite; }
+.anim-jumprope .elbowL, .anim-jumprope .elbowR { animation: jr-elbow 0.5s ease-in-out infinite; }
+.anim-jumprope .kneeL, .anim-jumprope .kneeR { animation: jr-knee 0.5s ease-in-out infinite; }
+@keyframes jr-rig {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes jr-elbow {
+  0%, 100% { transform: rotate(-70deg); }
+  50%      { transform: rotate(-95deg); }
+}
+@keyframes jr-knee {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(25deg); }
+}
+
+/* ==========================================================================
+   13. STRETCH, FORWARD FOLD, CAT-COW & SHOULDER ROLL
+   ========================================================================== */
+.anim-stretch .armL, .anim-stretch .armR { transform: rotate(-172deg); }
+.anim-stretch .upperBody { animation: sr-ub 3s ease-in-out infinite; }
+@keyframes sr-ub {
+  0%, 100% { transform: rotate(-6deg); }
+  50%      { transform: rotate(6deg); }
+}
+
+.anim-forwardfold .rig { animation: ff-rig 3s ease-in-out infinite; }
+.anim-forwardfold .upperBody { animation: ff-ub 3s ease-in-out infinite; }
+.anim-forwardfold .armL, .anim-forwardfold .armR { animation: ff-arm 3s ease-in-out infinite; }
+@keyframes ff-rig {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-14px, 0); } /* Hips push back for hamstrings */
+}
+@keyframes ff-ub {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(110deg); }
+}
+@keyframes ff-arm {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-110deg); }
+}
+
+.anim-catcow .rig { transform: translate(0, 27px); }
+.anim-catcow .bodyRotate { transform: rotate(75deg); }
+.anim-catcow .legL, .anim-catcow .legR { transform: rotate(-75deg); }
+.anim-catcow .kneeL, .anim-catcow .kneeR { transform: rotate(90deg); }
+.anim-catcow .upperBody { animation: cc-ub 3.2s ease-in-out infinite; }
+.anim-catcow .armL, .anim-catcow .armR { animation: cc-arm 3.2s ease-in-out infinite; }
+@keyframes cc-ub {
+  0%, 100% { transform: rotate(10deg); } /* Cow: chest presses down */
+  50%      { transform: rotate(-10deg); } /* Cat: spine arches up */
+}
+@keyframes cc-arm {
+  0%, 100% { transform: rotate(-85deg); }
+  50%      { transform: rotate(-65deg); }
+}
+
+.anim-shoulderroll .armL { animation: shr-a 2.2s ease-in-out infinite; }
+.anim-shoulderroll .armR { animation: shr-a 2.2s ease-in-out infinite reverse; }
+@keyframes shr-a {
+  0%, 100% { transform: rotate(-15deg); }
+  50%      { transform: rotate(18deg); }
+}
+
+/* ==========================================================================
+   14. YOGA POSES (Downward Dog, Child's Pose, Cobra, Warrior, Tree, Sun Flow)
+   ========================================================================== */
+.anim-downdog .rig { animation: dd-rig 3.2s ease-in-out infinite; }
+.anim-downdog .upperBody { transform: rotate(112deg); }
+.anim-downdog .armL, .anim-downdog .armR { transform: rotate(-162deg); }
+.anim-downdog .legL, .anim-downdog .legR { transform: rotate(35deg); }
+@keyframes dd-rig {
+  0%, 100% { transform: translate(-20px, 10px); }
+  50%      { transform: translate(-20px, 7px); }
+}
+
+.anim-childspose .rig { animation: cp-rig 4s ease-in-out infinite; }
+.anim-childspose .upperBody { transform: rotate(100deg); }
+.anim-childspose .armL, .anim-childspose .armR { transform: rotate(-185deg); }
+.anim-childspose .legL, .anim-childspose .legR { transform: rotate(-58deg); }
+.anim-childspose .kneeL, .anim-childspose .kneeR { transform: rotate(148deg); }
+@keyframes cp-rig {
+  0%, 100% { transform: translate(-30px, 41px); }
+  50%      { transform: translate(-30px, 39px); }
+}
+
+.anim-cobra .rig { transform: translate(0, 55px); }
+.anim-cobra .legL, .anim-cobra .legR { transform: rotate(90deg); }
+.anim-cobra .upperBody { animation: cb-ub 3.2s ease-in-out infinite; }
+.anim-cobra .armL, .anim-cobra .armR { animation: cb-arm 3.2s ease-in-out infinite; }
+.anim-cobra .elbowL, .anim-cobra .elbowR { animation: cb-elbow 3.2s ease-in-out infinite; }
+@keyframes cb-ub {
+  0%, 100% { transform: rotate(80deg); }
+  50%      { transform: rotate(54deg); }
+}
+@keyframes cb-arm {
+  0%, 100% { transform: rotate(-9deg); }
+  50%      { transform: rotate(-11deg); }
+}
+@keyframes cb-elbow {
+  0%, 100% { transform: rotate(-153deg); }
+  50%      { transform: rotate(-92deg); }
+}
+
+.anim-warrior .rig { animation: wr-rig 3s ease-in-out infinite; }
+.anim-warrior .legL { transform: rotate(-85deg); }
+.anim-warrior .kneeL { transform: rotate(85deg); }
+.anim-warrior .legR { transform: rotate(58deg); }
+.anim-warrior .armL { transform: rotate(-90deg); }
+.anim-warrior .armR { transform: rotate(90deg); }
+@keyframes wr-rig {
+  0%, 100% { transform: translate(0, 27px); }
+  50%      { transform: translate(0, 25.5px); }
+}
+
+.anim-tree .legL { transform: rotate(-70deg); }
+.anim-tree .kneeL { transform: rotate(130deg); }
+.anim-tree .armL, .anim-tree .armR { transform: rotate(-172deg); }
+.anim-tree .rig { animation: tr-rig 3.4s ease-in-out infinite; }
+@keyframes tr-rig {
+  0%, 100% { transform: translateX(-1.5px); }
+  50%      { transform: translateX(1.5px); }
+}
+
+.anim-sunflow .rig { animation: sn-rig 8s ease-in-out infinite; }
+.anim-sunflow .bodyRotate { animation: sn-body 8s ease-in-out infinite; }
+.anim-sunflow .upperBody { animation: sn-ub 8s ease-in-out infinite; }
+.anim-sunflow .legL, .anim-sunflow .legR { animation: sn-leg 8s ease-in-out infinite; }
+.anim-sunflow .armL, .anim-sunflow .armR { animation: sn-arm 8s ease-in-out infinite; }
+.anim-sunflow .elbowL, .anim-sunflow .elbowR { animation: sn-elbow 8s ease-in-out infinite; }
+@keyframes sn-rig {
+  0%         { transform: translate(0, 0); }
+  14%        { transform: translate(-12px, 0); }
+  30%        { transform: translate(0, 34px); }
+  46%        { transform: translate(0, 55px); }
+  64%        { transform: translate(-20px, 10px); }
+  82%, 100%  { transform: translate(0, 0); }
+}
+@keyframes sn-body {
+  0%, 14%    { transform: rotate(0deg); }
+  30%        { transform: rotate(66deg); }
+  46%, 100%  { transform: rotate(0deg); }
+}
+@keyframes sn-ub {
+  0%         { transform: rotate(0deg); }
+  14%        { transform: rotate(108deg); }
+  30%        { transform: rotate(0deg); }
+  46%        { transform: rotate(55deg); }
+  64%        { transform: rotate(112deg); }
+  82%, 100%  { transform: rotate(0deg); }
+}
+@keyframes sn-leg {
+  0%, 30%    { transform: rotate(0deg); }
+  46%        { transform: rotate(90deg); }
+  64%        { transform: rotate(35deg); }
+  82%, 100%  { transform: rotate(0deg); }
+}
+@keyframes sn-arm {
+  0%         { transform: rotate(-172deg); }
+  14%        { transform: rotate(-108deg); }
+  30%        { transform: rotate(-66deg); }
+  46%        { transform: rotate(-11deg); }
+  64%        { transform: rotate(-162deg); }
+  82%, 100%  { transform: rotate(-172deg); }
+}
+@keyframes sn-elbow {
+  0%, 30%    { transform: rotate(0deg); }
+  46%        { transform: rotate(-92deg); }
+  64%, 100%  { transform: rotate(0deg); }
+}
+
+/* ==========================================================================
+   15. WALL SIT, LEG RAISE, HAMSTRING & HIP FLEXOR STRETCHES
+   ========================================================================== */
+.anim-wallsit .legL, .anim-wallsit .legR { transform: rotate(-88deg); }
+.anim-wallsit .kneeL, .anim-wallsit .kneeR { transform: rotate(88deg); }
+.anim-wallsit .armL, .anim-wallsit .armR { transform: rotate(-25deg); }
+.anim-wallsit .rig { animation: ws-rig 3s ease-in-out infinite; }
+@keyframes ws-rig {
+  0%, 100% { transform: translateY(29px); }
+  50%      { transform: translateY(27.5px); }
+}
+
+.anim-legraise .rig { transform: translate(28px, 55px); }
+.anim-legraise .bodyRotate { transform: rotate(-90deg); }
+.anim-legraise .legL, .anim-legraise .legR { animation: lr-leg 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes lr-leg {
+  0%, 100% { transform: rotate(0deg); }
+  45%, 55% { transform: rotate(-88deg); } /* Straight legs lift to vertical */
+}
+
+.anim-hamstring .rig { transform: translate(-15px, 55px); }
+.anim-hamstring .legL, .anim-hamstring .legR { transform: rotate(-90deg); }
+.anim-hamstring .upperBody { animation: hm-ub 3.6s ease-in-out infinite; }
+.anim-hamstring .armL, .anim-hamstring .armR { animation: hm-arm 3.6s ease-in-out infinite; }
+@keyframes hm-ub {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(75deg); }
+}
+@keyframes hm-arm {
+  0%, 100% { transform: rotate(-85deg); }
+  50%      { transform: rotate(-160deg); }
+}
+
+.anim-hipflexor .legL { transform: rotate(-85deg); }
+.anim-hipflexor .kneeL { transform: rotate(85deg); }
+.anim-hipflexor .legR { transform: rotate(10deg); }
+.anim-hipflexor .kneeR { transform: rotate(80deg); }
+.anim-hipflexor .armL, .anim-hipflexor .armR { transform: rotate(-172deg); }
+.anim-hipflexor .rig { animation: hf-rig 4s ease-in-out infinite; }
+.anim-hipflexor .upperBody { animation: hf-ub 4s ease-in-out infinite; }
+@keyframes hf-rig {
+  0%, 100% { transform: translate(0, 27px); }
+  50%      { transform: translate(4px, 27px); }
+}
+@keyframes hf-ub {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-6deg); }
+}

@@ -1,0 +1,12 @@
+{
+  "appId": "com.ontrack.fitness",
+  "appName": "On Track Fitness",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0d0f12",
+    "allowMixedContent": true
+  }
+}
