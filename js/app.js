@@ -2,6 +2,17 @@ let exercises = [];
 let history = [];
 let profiles = [];
 let userEquipment = [];
+const EQUIPMENT_ICONS = {
+  "Bodyweight": { icon: "🤸", sub: "Body weight" },
+  "Dumbbells": { icon: "🏋️", sub: "Free weights" },
+  "Kettlebell": { icon: "🫖", sub: "Cast iron" },
+  "Resistance Band": { icon: "➰", sub: "Tension bands" },
+  "Chair/Bench": { icon: "🛋️", sub: "Elevated seat" },
+  "Wall": { icon: "🧱", sub: "Vertical plane" },
+  "Jump rope": { icon: "🪢", sub: "Speed rope" },
+  "Stairs": { icon: "🪜", sub: "Step incline" },
+  "Pull-up Bar": { icon: "🧗", sub: "Bar rig" }
+};
 let session = { 
   targetMinutes: 20, 
   targetCount: 6, 
@@ -655,19 +666,33 @@ function renderToday(){
   captionText = `${Math.round(totalDuration)} / ${target} MIN · ${coreCount} MOVES`;
 
   root.innerHTML = `
-    <!-- Panel 1: My Equipment (No explanation text) -->
-    <div class="panel">
-      <div class="eyebrow">My Equipment</div>
-      <div class="chip-grid" id="gearGrid">
-        ${EQUIPMENT_OPTIONS.map(eq=>`<div class="chip teal ${userEquipment.includes(eq)?'on':''}" data-geq="${escapeAttr(eq)}">${eq}</div>`).join('')}
+    <!-- Panel 1: My Equipment (Tactile Illustrated Gear Cards) -->
+    <div class="panel gear-panel">
+      <div class="panel-header-row">
+        <div class="eyebrow" style="margin:0;">My Equipment</div>
+        <span class="gear-count-pill" id="gearCountPill">${userEquipment.length} Selected</span>
+      </div>
+      <div class="gear-grid" id="gearGrid">
+        ${EQUIPMENT_OPTIONS.map(eq => {
+          const isSelected = userEquipment.includes(eq);
+          const meta = EQUIPMENT_ICONS[eq] || { icon: "⚡", sub: "Equipment" };
+          return `
+            <div class="gear-card ${isSelected ? 'active' : ''}" data-geq="${escapeAttr(eq)}">
+              <span class="gear-check">✓</span>
+              <span class="gear-icon">${meta.icon}</span>
+              <span class="gear-name">${eq}</span>
+              <span class="gear-sub">${meta.sub}</span>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
 
-    <!-- Panel 2: Warm-Up & Warm-Down (No explanation text) -->
-    <div class="panel">
-      <div class="eyebrow">Warm-Up &amp; Warm-Down</div>
+    <!-- Panel 2: Warm-Up & Warm-Down (Sleek Glass Panel) -->
+    <div class="glass-panel">
+      <div class="eyebrow" style="margin-bottom:12px;">Warm-Up &amp; Warm-Down</div>
       
-      <div class="toggle-row" style="margin-top:12px;">
+      <div class="toggle-row">
         <label class="toggle-label">
           <input type="checkbox" id="warmupToggle" ${session.warmup ? 'checked' : ''}>
           <span>Warm-Up (Jumping Jacks)</span>
@@ -677,7 +702,7 @@ function renderToday(){
         </div>
       </div>
 
-      <div class="toggle-row" style="border-top:1px solid rgba(255,255,255,0.06); margin-top:10px; padding-top:10px;">
+      <div class="toggle-row" style="border-top:1px solid rgba(255,255,255,0.08); margin-top:12px; padding-top:12px;">
         <label class="toggle-label">
           <input type="checkbox" id="cooldownToggle" ${session.cooldown ? 'checked' : ''}>
           <span>Warm-Down (Yoga Stretch)</span>
@@ -688,18 +713,19 @@ function renderToday(){
       </div>
     </div>
 
-    <!-- Panel 3: Build Workout (2 Sliders + 3 Intensity Options + Circuit Mode) -->
+    <!-- Panel 3: Build Workout (Clearly Separated Sliders + Intensity + Circuit) -->
     <div class="panel">
-      <div class="eyebrow">Build Workout</div>
+      <div class="eyebrow" style="margin-bottom:14px;">Build Workout</div>
 
-      <!-- Variable 1: Total Time Slider -->
-      <div class="slider-control" style="margin-top:14px;">
-        <div class="slider-header">
-          <span class="slider-label">Total Time</span>
-          <div class="slider-display">
-            <span class="slider-val" id="timeValDisplay">${session.targetMinutes}</span>
-            <span class="slider-unit">MIN</span>
-          </div>
+      <!-- Variable 1: Distinct Hero Card for Total Time -->
+      <div class="hero-slider-card time-card">
+        <div class="hero-card-top">
+          <span class="hero-card-tag">⏱ Total Time</span>
+          <span class="hero-card-tag" style="color:var(--accent);">Target Duration</span>
+        </div>
+        <div class="hero-display-wrap">
+          <span class="hero-display-num" id="timeValDisplay">${session.targetMinutes}</span>
+          <span class="hero-display-unit">MINUTES</span>
         </div>
         <div class="slider-track-wrap">
           <button class="nudge-btn" id="timeDecBtn" aria-label="Decrease time">&#8722;</button>
@@ -714,14 +740,15 @@ function renderToday(){
         </div>
       </div>
 
-      <!-- Variable 2: Exercises Slider -->
-      <div class="slider-control" style="margin-top:22px;">
-        <div class="slider-header">
-          <span class="slider-label">Exercises</span>
-          <div class="slider-display">
-            <span class="slider-val" id="countValDisplay">${session.targetCount}</span>
-            <span class="slider-unit">MOVES</span>
-          </div>
+      <!-- Variable 2: Distinct Hero Card for Exercises -->
+      <div class="hero-slider-card moves-card">
+        <div class="hero-card-top">
+          <span class="hero-card-tag">🎯 Number of Exercises</span>
+          <span class="hero-card-tag" style="color:var(--meter);">Total Moves</span>
+        </div>
+        <div class="hero-display-wrap">
+          <span class="hero-display-num" id="countValDisplay">${session.targetCount}</span>
+          <span class="hero-display-unit">EXERCISES</span>
         </div>
         <div class="slider-track-wrap">
           <button class="nudge-btn" id="countDecBtn" aria-label="Decrease exercises">&#8722;</button>
@@ -729,10 +756,10 @@ function renderToday(){
           <button class="nudge-btn" id="countIncBtn" aria-label="Increase exercises">&#43;</button>
         </div>
         <div class="tick-row">
-          <span>2</span>
-          <span>5</span>
-          <span>10</span>
-          <span>15</span>
+          <span>2 moves</span>
+          <span>6 moves</span>
+          <span>10 moves</span>
+          <span>15 moves</span>
         </div>
       </div>
 
@@ -1014,14 +1041,16 @@ function renderToday(){
     });
   });
 
-  // Equipment selection
-  root.querySelectorAll('#gearGrid .chip').forEach(chip => {
-    chip.addEventListener('click', async () => {
-      const eq = chip.dataset.geq;
+  // Equipment selection (Tactile Gear Cards)
+  root.querySelectorAll('#gearGrid .gear-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      const eq = card.dataset.geq;
       const idx = userEquipment.indexOf(eq);
       if(idx > -1) userEquipment.splice(idx, 1); 
       else userEquipment.push(eq);
-      chip.classList.toggle('on');
+      card.classList.toggle('active');
+      const countPill = document.getElementById('gearCountPill');
+      if(countPill) countPill.textContent = `${userEquipment.length} Selected`;
       await saveUserEquipment();
     });
   });
