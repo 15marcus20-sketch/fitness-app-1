@@ -86,7 +86,7 @@ button{background:none;border:0;cursor:pointer;text-align:inherit}
 .tabs .tab.active:before{content:'';position:absolute;left:22%;right:22%;top:-1px;height:4px;background:var(--ink)}
 
 /* ---------- sub tabs ---------- */
-.sub2{display:flex;gap:22px;padding:12px 22px 0;border-bottom:1px solid var(--rule)}
+.sub2{position:relative;z-index:2;background:var(--paper);display:flex;gap:22px;padding:12px 22px 0;border-bottom:1px solid var(--rule)}
 .sub2 button{padding:10px 0 9px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink2)}
 .sub2 button.on{color:var(--ink);box-shadow:inset 0 -4px 0 var(--ink)}
 
@@ -308,3 +308,7 @@ select.inp{-webkit-appearance:none;appearance:none;background:transparent url("d
   *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   .loading .bar2 i{animation:none}
 }
+
+/* ---------- welcome (first run) ---------- */
+#view-welcome{padding-bottom:calc(var(--safe-b) + 18px)}
+#view-welcome .actions.push{position:static;padding-bottom:16px}
