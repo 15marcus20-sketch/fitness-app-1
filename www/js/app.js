@@ -448,6 +448,7 @@ async function finishSession(){
   session.items = [];
   renderToday(); renderHistory();
   showToast('Session logged');
+  logTab = 'sessions'; renderHistory();
   setView('history');
 }
 
@@ -1247,21 +1248,101 @@ function renderProfiles(){
 }
 
 /* ---------------- Render: History (Log) ---------------- */
+let logTab = 'sessions';   // 'sessions' | 'progress'
+const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+const isNonMove = n => /^(Warm-(Up|Down)|Drinks Break)/i.test(String(n || ''));
+// Everything on the Progress tab comes from the saved log, nothing else.
+function progressStats(now = new Date()){
+  const inMonth = (d, y, m) => d.getFullYear() === y && d.getMonth() === m;
+  const dated = history.map(h => ({ h, d: new Date(h.date) })).filter(x => !isNaN(x.d));
+  const month = dated.filter(x => inMonth(x.d, now.getFullYear(), now.getMonth()));
+  const minutes = month.reduce((t, x) => t + (Number(x.h.actualMinutes) || 0), 0);
+  // best month yet: strictly more than every earlier month that has sessions
+  const perMonth = {};
+  dated.forEach(x => { const k = x.d.getFullYear() * 12 + x.d.getMonth(); perMonth[k] = (perMonth[k] || 0) + 1; });
+  const cur = now.getFullYear() * 12 + now.getMonth();
+  const earlier = Object.keys(perMonth).map(Number).filter(k => k < cur);
+  const best = month.length > 0 && earlier.length > 0 && earlier.every(k => perMonth[k] < month.length);
+  // streak: consecutive days with a session, ending today (or yesterday if today has none yet)
+  const days = new Set(dated.map(x => dayKey(x.d)));
+  const c = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if(!days.has(dayKey(c))) c.setDate(c.getDate() - 1);
+  let streak = 0;
+  while(days.has(dayKey(c))){ streak++; c.setDate(c.getDate() - 1); }
+  // most done: the move ticked off most often this month (warm-ups and drinks breaks don't count)
+  const count = {};
+  month.forEach(x => (x.h.exercises || []).forEach(e => { if(e.done && !isNonMove(e.name)) count[e.name] = (count[e.name] || 0) + 1; }));
+  const top = Object.entries(count).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  // sessions per week, last 7 weeks (Monday starts), oldest first
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const weeks = Array.from({ length: 7 }, (_, i) => {
+    const a = new Date(monday); a.setDate(a.getDate() - 7 * (6 - i));
+    const b = new Date(a); b.setDate(b.getDate() + 7);
+    return dated.filter(x => x.d >= a && x.d < b).length;
+  });
+  return { done: month.length, minutes, best, streak, mostDone: top ? top[0] : null, weeks };
+}
+function progressHtml(){
+  const st = progressStats();
+  const xs = [0, 60, 120, 180, 240, 300, 390];
+  const max = Math.max(1, ...st.weeks);
+  const ys = st.weeks.map(n => Math.round(225 - n / max * 107));
+  const pts = xs.map((x, i) => `${x},${ys[i]}`).join(' ');
+  const row = (k, v, last) => `<div class="rw" style="justify-content:space-between;padding:4px 0${last ? ';border:0' : ''}"><span>${k}</span><span class="D" style="font-size:34px" data-stat="${k}">${v}</span></div>`;
+  return `<div class="D" style="font-size:130px;padding:14px 14px 0" id="progDone">${st.done}<span style="font-size:48px"> done</span></div>
+    <div class="lab muted" style="padding:4px 22px 0">${st.done === 1 ? 'session' : 'sessions'} finished${st.best ? ', best month yet' : ' this month'}</div>
+    <div style="position:relative;margin-top:44px;height:250px" role="img" aria-label="Sessions per week, last 7 weeks: ${st.weeks.join(', ')}">
+      <svg viewBox="0 0 390 250" preserveAspectRatio="none" style="display:block;position:absolute;left:0;top:0;width:100%;height:250px" aria-hidden="true">
+        <defs><linearGradient id="pg" x1="0" y1="1" x2=".35" y2="0"><stop offset="0" stop-color="#B3200C"/><stop offset=".38" stop-color="#E2401A"/><stop offset=".72" stop-color="#F2762A"/><stop offset="1" stop-color="#F9A63C"/></linearGradient></defs>
+        <polygon points="0,250 ${pts} 390,250" fill="url(#pg)"/>
+        <polyline points="${pts}" fill="none" stroke="#0B0B0B" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      ${fig('tree', 'mini', `left:calc(${(xs[5] - 70) / 390 * 100}%);top:${ys[5] - 152}px;width:118px;height:160px`)}
+      <div class="lab wht abs" style="left:22px;bottom:12px">Sessions per week</div></div>
+    <div class="pad" style="padding-top:2px">
+      ${row('Minutes', st.minutes)}
+      ${row('Streak', st.streak === 1 ? '1 day' : `${st.streak} days`, !st.mostDone)}
+      ${st.mostDone ? row('Most done', escapeHtml(disp(st.mostDone)), true) : ''}</div>`;
+}
+
+/* ---------------- Render: Welcome (first run only) ---------------- */
+function renderWelcome(){
+  const root = document.getElementById('view-welcome');
+  root.innerHTML = `<div class="hdr lab">On Track</div><h1 class="D title" style="font-size:100px">Build it.<br>Run it.</h1>
+    ${band(380, `${fig('highknees', '', 'right:0;top:20px;width:240px;height:330px')}
+      <div class="lab abs" style="left:22px;bottom:34px;line-height:1.5">5 to 60 min<br>${exercises.length} moves<br>A back note<br>on every one</div>`)}
+    <p class="pad body" style="padding-top:26px">Tell it your gear and how long you've got. It builds the workout and counts you through every move.</p>
+    <div class="actions push"><button class="b1 tall" id="getStartedBtn"><span>Get started</span></button></div>`;
+  setView('welcome');
+  root.querySelector('#getStartedBtn').addEventListener('click', () => {
+    markWelcomed();
+    document.getElementById('tabbar').style.display = 'flex';
+    setView('today');
+    renderToday();
+    openGearSheet();
+  });
+}
+
 function logDate(iso){ return new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
 function renderHistory(){
   const root = document.getElementById('view-history');
   const now = new Date();
   const month = history.filter(h => { const d = new Date(h.date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
-  const head = `<div class="hdr lab">${history.length ? `${month} this month` : 'Nothing yet'}</div><h1 class="D title">Log</h1>`;
+  const head = `<div class="hdr lab">${logTab === 'progress' ? 'This month' : !history.length ? 'Nothing yet' : `${month} this month`}</div><h1 class="D title">Log</h1>
+    <div class="sub2" role="tablist" aria-label="Log">
+      <button role="tab" aria-selected="${logTab === 'sessions'}" class="${logTab === 'sessions' ? 'on' : ''}" data-ltab="sessions">Sessions</button>
+      <button role="tab" aria-selected="${logTab === 'progress'}" class="${logTab === 'progress' ? 'on' : ''}" data-ltab="progress">Progress</button></div>`;
+  const bindTabs = () => root.querySelectorAll('[data-ltab]').forEach(t => t.addEventListener('click', () => { logTab = t.dataset.ltab; renderHistory(); }));
+  if(logTab === 'progress'){ root.innerHTML = head + progressHtml(); bindTabs(); return; }
   if(history.length === 0){
     root.innerHTML = `${head}${band(320, `<div class="D wht abs" style="left:22px;top:28px;font-size:76px">No<br>sessions<br>yet</div>
         ${fig('jumprope', 'small', 'right:-16px;top:60px;width:170px;height:230px')}`, 'margin-top:30px')}
       <p class="pad body" style="padding-top:26px">Finish a workout and it lands here, with every move you did.</p>
       <div class="actions push"><button class="b1" id="goTodayBtn"><span>Go to today</span></button></div>`;
     root.querySelector('#goTodayBtn').addEventListener('click', () => setView('today'));
+    bindTabs();
     return;
   }
-  root.innerHTML = head + `<div class="pad" style="margin-top:12px;border-top:1px solid var(--rule)">${history.map(h => {
+  root.innerHTML = head + `<div class="pad">${history.map(h => {
     const d = new Date(h.date);
     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
     return `<div class="rw" style="padding:12px 0"><div class="grow"><h2 class="D2" style="font-size:34px">${logDate(h.date)}</h2>
@@ -1271,6 +1352,7 @@ function renderHistory(){
         ${h.exercises.map(e => `<div class="row" style="padding:7px 0;font-size:16px;${e.done ? '' : 'color:var(--ink2)'}"><span>${e.done ? '&#10003; ' : 'Skipped: '}${escapeHtml(disp(e.name))}</span><span class="muted">${Math.max(1, Math.round(e.duration))} min</span></div>`).join('')}
         <button class="lnk" data-delhist="${h.id}" style="margin-top:6px">Delete this session</button></div>`;
   }).join('')}</div>`;
+  bindTabs();
   root.querySelectorAll('[data-toggle-hist]').forEach(el => el.addEventListener('click', () => {
     const b = document.getElementById('hb-' + el.dataset.toggleHist);
     b.hidden = !b.hidden;
@@ -1281,7 +1363,7 @@ function renderHistory(){
 }
 async function deleteHistoryEntry(id){
   const h = history.find(x => x.id === id);
-  const ok = await confirmSheet({ title: 'Delete this session?', text: `${h ? logDate(h.date) + ', ' + h.actualMinutes + ' min. ' : ''}It comes off your log.`,
+  const ok = await confirmSheet({ title: 'Delete this session?', text: `${h ? logDate(h.date) + ', ' + h.actualMinutes + ' min. ' : ''}It comes off your log and out of your progress.`,
     primary: { label: 'Delete', value: true }, secondary: { label: 'Keep it', value: false } });
   if(!ok) return;
   history = history.filter(h => h.id !== id);
@@ -1687,8 +1769,9 @@ async function init(){
     <div class="view" id="view-library"></div>
     <div class="view" id="view-profiles"></div>
     <div class="view" id="view-history"></div>
+    <div class="view" id="view-welcome"></div>
   `;
-  document.getElementById('tabbar').style.display = 'flex';
+  document.getElementById('tabbar').style.display = firstRun ? 'none' : 'flex';
   document.querySelectorAll('.tab').forEach(t=>{
     t.addEventListener('click', ()=>{
       // Tapping Today again goes back from the list to the ready screen
@@ -1701,5 +1784,6 @@ async function init(){
   renderLibrary();
   renderProfiles();
   renderHistory();
+  if(firstRun) renderWelcome();
 }
 init();

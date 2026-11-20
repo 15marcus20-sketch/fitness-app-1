@@ -33,3 +33,27 @@
 .anim-tree .armL,.anim-tree .armR{transform:rotate(-40deg)}
 .anim-tree .elbowL,.anim-tree .elbowR{transform:rotate(-115deg)}
 @media (prefers-reduced-motion:reduce){.illustration *{animation:none!important}}
+/* Step-up onto chair: a chunky chair prop, drawn only for this move.
+   Lead (left) foot is pinned on the seat (calf end at 72,125) from 22% to 80%:
+   the rig/legL/kneeL stops below are two-link IK solutions for that point, so the
+   foot does not slide while the hip rises 22 units to stand tall on the chair. */
+.illustration .prop{display:none}
+.illustration.anim-chairstep .prop-chair{display:inline}
+.illustration .prop-chair line{stroke:var(--ink);stroke-width:7;stroke-linecap:round}
+.anim-chairstep .elbowL,.anim-chairstep .elbowR{transform:rotate(-60deg)}
+.anim-chairstep .rig{animation:cs-rig 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .upperBody{animation:cs-ub 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .legL{animation:cs-legL 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .kneeL{animation:cs-kneeL 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .legR{animation:cs-legR 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .kneeR{animation:cs-kneeR 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .armL{animation:cs-armL 2.4s cubic-bezier(.45,0,.55,1) infinite}
+.anim-chairstep .armR{animation:cs-armR 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes cs-rig{0%,22%,28%,74%,80%,100%{transform:translate(-16px,0)}33%,70%{transform:translate(-7.8px,-7.3px)}38%,66%{transform:translate(.5px,-12.6px)}43%,61%{transform:translate(8.8px,-17.5px)}48%,56%{transform:translate(17px,-22px)}}
+@keyframes cs-legL{0%,100%{transform:rotate(0)}11%,89%{transform:rotate(-85deg)}22%,28%,74%,80%{transform:rotate(-80.4deg)}33%,70%{transform:rotate(-64.1deg)}38%,66%{transform:rotate(-48.7deg)}43%,61%{transform:rotate(-31.2deg)}48%,56%{transform:rotate(0)}}
+@keyframes cs-kneeL{0%,100%{transform:rotate(0)}11%,89%{transform:rotate(110deg)}22%,28%,74%,80%{transform:rotate(78.5deg)}33%,70%{transform:rotate(72.5deg)}38%,66%{transform:rotate(64deg)}43%,61%{transform:rotate(48deg)}48%,56%{transform:rotate(0)}}
+@keyframes cs-legR{0%,33%,74%,100%{transform:rotate(0)}38%{transform:rotate(12deg)}43%{transform:rotate(-30deg)}48%,56%{transform:rotate(0)}61%{transform:rotate(-25deg)}66%{transform:rotate(10deg)}}
+@keyframes cs-kneeR{0%,33%,74%,100%{transform:rotate(0)}38%{transform:rotate(30deg)}43%{transform:rotate(65deg)}48%,56%{transform:rotate(0)}61%{transform:rotate(60deg)}66%{transform:rotate(10deg)}}
+@keyframes cs-ub{0%,100%{transform:rotate(2deg)}22%,28%,74%,80%{transform:rotate(10deg)}38%,66%{transform:rotate(12deg)}48%,56%{transform:rotate(1deg)}}
+@keyframes cs-armL{0%,48%,56%,100%{transform:rotate(0)}25%,75%{transform:rotate(25deg)}38%,66%{transform:rotate(30deg)}}
+@keyframes cs-armR{0%,48%,56%,100%{transform:rotate(0)}25%,75%{transform:rotate(-35deg)}38%,66%{transform:rotate(-40deg)}}
