@@ -1,0 +1,45 @@
+PASS  gear toggles persist  
+PASS  install sheet calls the PWA prompt  
+PASS  time scrub drag changes minutes  now 25
+PASS  time scrub keyboard  
+PASS  time scrub aria  
+PASS  stairs drag changes moves  moves 6
+PASS  stairs keyboard  
+PASS  ramp drag picks balanced  
+PASS  ramp keyboard to HIIT  
+PASS  circuit plate is a switch  
+PASS  rounds radios  
+PASS  warm-up notch  
+PASS  warm-down notch tap  
+PASS  focus tiles  
+PASS  build makes a circuit  
+PASS  add a move  
+PASS  remove a move  
+PASS  swap a move  Push-ups -> Walking Lunges
+PASS  done tick  
+PASS  save as profile  
+PASS  tap does not start workout  
+PASS  nothing fits state  
+PASS  hold to go starts the player  
+PASS  pause  
+PASS  resume  
+PASS  tap on skip rail does not skip  
+PASS  slide to skip  
+PASS  skip by keyboard  
+PASS  end confirm pauses the clock  
+PASS  keep going resumes  
+PASS  log it logs and goes to Log  
+PASS  add move to library  
+PASS  edit move  
+PASS  remove move  
+PASS  stepper  
+PASS  save fixed profile  
+PASS  edit profile opens filled  
+PASS  keep it keeps profile  
+PASS  start profile builds today  
+PASS  missing profile offers edit  
+PASS  open log entry  
+PASS  delete log entry  
+PASS  reduced motion stops the figure  running 0
+PASS  no native confirm/prompt dialogs, no page errors  
+0 failed of 44
