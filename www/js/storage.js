@@ -83,7 +83,7 @@ function saveExercises(){
     localStorage.setItem('on_track_exercises', JSON.stringify(exercises)); 
   } catch(e) { 
     console.error('Save exercises failed:', e); 
-    if (typeof showToast === 'function') showToast('Could not save — storage error'); 
+    if (typeof showToast === 'function') showToast("Couldn't save. Your phone's storage is full or blocked for this app."); 
   }
 }
 
@@ -92,7 +92,7 @@ function saveHistory(){
     localStorage.setItem('on_track_history', JSON.stringify(history)); 
   } catch(e) { 
     console.error('Save history failed:', e); 
-    if (typeof showToast === 'function') showToast('Could not save — storage error'); 
+    if (typeof showToast === 'function') showToast("Couldn't save. Your phone's storage is full or blocked for this app."); 
   }
 }
 
@@ -101,7 +101,7 @@ function saveProfiles(){
     localStorage.setItem('on_track_profiles', JSON.stringify(profiles)); 
   } catch(e) { 
     console.error('Save profiles failed:', e); 
-    if (typeof showToast === 'function') showToast('Could not save — storage error'); 
+    if (typeof showToast === 'function') showToast("Couldn't save. Your phone's storage is full or blocked for this app."); 
   }
 }
 
@@ -110,6 +110,6 @@ function saveUserEquipment(){
     localStorage.setItem('on_track_userEquipment', JSON.stringify(userEquipment)); 
   } catch(e) { 
     console.error('Save equipment failed:', e); 
-    if (typeof showToast === 'function') showToast('Could not save — storage error'); 
+    if (typeof showToast === 'function') showToast("Couldn't save. Your phone's storage is full or blocked for this app."); 
   }
 }
