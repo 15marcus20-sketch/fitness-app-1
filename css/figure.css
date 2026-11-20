@@ -1,0 +1,35 @@
+/* Round 7 figure (design/REVIEW.md): pictogram weight on T-Bone's rig.
+   Strokes are in viewBox units so weight scales with the figure.
+   Layered on top of animations.css; keyframes there are unchanged. */
+.illustration .seg{stroke:var(--ink);stroke-width:13;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.illustration .seg-torso{fill:var(--ink);stroke:var(--ink);stroke-width:5}
+.illustration .seg-head{fill:var(--ink);stroke:none}
+.illustration .seg-foot{stroke-width:11}
+.illustration.mini .seg{stroke:var(--ink);stroke-width:13}
+.illustration.small .seg{stroke-width:13}
+.illustration.small .seg-torso{stroke-width:5}
+.illustration.small .seg-foot{stroke-width:11}
+.illustration.mini .floor{display:none}
+.illustration .floor{stroke:var(--ink);stroke-width:3px;vector-effect:non-scaling-stroke;stroke-linecap:round;opacity:.35}
+/* resting elbow bend so arms never look like sticks */
+.anim-squat .elbowL,.anim-squat .elbowR{transform:rotate(-14deg)}
+.anim-jumpingjack .elbowL,.anim-jumpingjack .elbowR{animation:v6-jj-elb 1.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes v6-jj-elb{0%,100%{transform:rotate(-18deg)}45%,55%{transform:rotate(-4deg)}}
+/* smoother keyframes: longer cycle, symmetric ease, extra in-between stops */
+.anim-jumpingjack .rig{animation:v6-jj-bounce 1.2s cubic-bezier(.45,0,.55,1) infinite}
+.anim-jumpingjack .armL,.anim-jumpingjack .armR{animation:v6-jj-arms 1.2s cubic-bezier(.45,0,.55,1) infinite}
+.anim-jumpingjack .legL{animation:v6-jj-legL 1.2s cubic-bezier(.45,0,.55,1) infinite}
+.anim-jumpingjack .legR{animation:v6-jj-legR 1.2s cubic-bezier(.45,0,.55,1) infinite}
+.anim-jumpingjack .kneeL,.anim-jumpingjack .kneeR{animation:v6-jj-knee 1.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes v6-jj-bounce{0%,100%{transform:translateY(1px)}12%{transform:translateY(-6px)}24%{transform:translateY(-11px)}40%{transform:translateY(-4px)}50%{transform:translateY(2px)}62%{transform:translateY(-6px)}74%{transform:translateY(-11px)}90%{transform:translateY(-4px)}}
+@keyframes v6-jj-arms{0%,100%{transform:rotate(10deg)}25%{transform:rotate(-80deg)}45%,55%{transform:rotate(-166deg)}75%{transform:rotate(-80deg)}}
+@keyframes v6-jj-legL{0%,100%{transform:rotate(-3deg)}25%{transform:rotate(-13deg)}45%,55%{transform:rotate(-21deg)}75%{transform:rotate(-12deg)}}
+@keyframes v6-jj-legR{0%,100%{transform:rotate(3deg)}25%{transform:rotate(13deg)}45%,55%{transform:rotate(21deg)}75%{transform:rotate(12deg)}}
+@keyframes v6-jj-knee{0%,100%,50%{transform:rotate(12deg)}25%,75%{transform:rotate(4deg)}}
+.anim-squat .rig,.anim-squat .upperBody,.anim-squat .legL,.anim-squat .legR,.anim-squat .kneeL,.anim-squat .kneeR,.anim-squat .armL,.anim-squat .armR{animation-duration:2.4s;animation-timing-function:cubic-bezier(.45,0,.55,1)}
+.anim-tree .rig{animation:v6-tree 4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes v6-tree{0%,100%{transform:translateX(-1px) rotate(-.6deg)}50%{transform:translateX(1px) rotate(.6deg)}}
+/* tree hands at the chest so the heavier arms never cover the head */
+.anim-tree .armL,.anim-tree .armR{transform:rotate(-40deg)}
+.anim-tree .elbowL,.anim-tree .elbowR{transform:rotate(-115deg)}
+@media (prefers-reduced-motion:reduce){.illustration *{animation:none!important}}

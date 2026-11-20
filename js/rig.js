@@ -38,15 +38,19 @@ const PATTERN_FALLBACK_BY_CATEGORY = { strength:"squat", cardio:"jumpingjack", c
 function patternForExercise(ex){
   return ex.pattern || PATTERN_FALLBACK_BY_CATEGORY[ex.category] || "squat";
 }
+// Round 7 pictogram weight (design/REVIEW.md): same rig groups and class names, so every
+// keyframe in css/animations.css still drives it. Tapered solid torso, r12 head with a
+// neck gap, short feet, faint floor tick. Weight lives in css/figure.css.
 function buildFigureSVG(pattern, sizeClass){
-  return `<svg class="illustration ${sizeClass||''} anim-${pattern}" viewBox="0 0 120 160" preserveAspectRatio="xMidYMid meet">
+  return `<svg class="illustration ${sizeClass||''} anim-${pattern}" viewBox="0 0 120 160" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <line class="floor" x1="56" y1="155" x2="96" y2="155"/>
     <g class="rig">
       <g transform="translate(60,90)">
         <g class="bodyRotate">
           <g class="upperBody">
-            <line class="seg seg-torso" x1="0" y1="0" x2="0" y2="-50"/>
+            <path class="seg seg-torso" d="M-5,-1 Q0,2 5,-1 L7,-46 Q0,-49 -7,-46 Z"/>
             <g transform="translate(0,-50)">
-              <circle class="seg seg-head" cx="0" cy="-14" r="9"/>
+              <circle class="seg seg-head" cx="0" cy="-23" r="12"/>
               <g class="armL">
                 <line class="seg seg-upperarmL" x1="0" y1="0" x2="-3" y2="22"/>
                 <g transform="translate(-3,22)">
@@ -69,7 +73,7 @@ function buildFigureSVG(pattern, sizeClass){
             <line class="seg seg-thighL" x1="0" y1="0" x2="-3" y2="30"/>
             <g transform="translate(-3,30)">
               <g class="kneeL">
-                <line class="seg seg-calfL" x1="0" y1="0" x2="-2" y2="27"/>
+                <line class="seg seg-calfL" x1="0" y1="0" x2="-2" y2="27"/><line class="seg seg-foot seg-footL" x1="-2" y1="27" x2="3" y2="27.5"/>
               </g>
             </g>
           </g>
@@ -77,7 +81,7 @@ function buildFigureSVG(pattern, sizeClass){
             <line class="seg seg-thighR" x1="0" y1="0" x2="3" y2="30"/>
             <g transform="translate(3,30)">
               <g class="kneeR">
-                <line class="seg seg-calfR" x1="0" y1="0" x2="2" y2="27"/>
+                <line class="seg seg-calfR" x1="0" y1="0" x2="2" y2="27"/><line class="seg seg-foot seg-footR" x1="2" y1="27" x2="7" y2="27.5"/>
               </g>
             </g>
           </g>
