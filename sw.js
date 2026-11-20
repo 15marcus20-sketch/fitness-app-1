@@ -3,7 +3,7 @@
    Enables complete offline standalone operation on Android & mobile browsers.
    ========================================================================== */
 
-const CACHE_NAME = 'ontrack-app-v1.0.1';
+const CACHE_NAME = 'ontrack-app-v2.1.0';
 
 const CORE_ASSETS = [
   './',
@@ -11,10 +11,14 @@ const CORE_ASSETS = [
   './manifest.webmanifest',
   './css/app.css',
   './css/animations.css',
+  './css/figure.css',
+  './fonts/saira-extra-condensed-900-latin.woff2',
+  './fonts/familjen-grotesk-latin.woff2',
   './js/rig.js',
   './js/exercises.js',
   './js/storage.js',
   './js/audio.js',
+  './js/controls.js',
   './js/app.js',
   './icons/icon.svg',
   './icons/icon-192.png',

@@ -1,0 +1,63 @@
+PASS  fresh install shows Welcome first  
+PASS  Get started leads into the gear picker  
+PASS  welcome flag stored  
+PASS  fresh install: 7 Minute profile exists with 12 moves  {"n":1,"ids":12,"ok":true,"step":1}
+PASS  Welcome shows only once  
+PASS  reload does not duplicate the 7 Minute profile  
+PASS  gear toggles persist  
+PASS  install sheet calls the PWA prompt  
+PASS  time scrub drag changes minutes  now 25
+PASS  time scrub keyboard  
+PASS  time scrub aria  
+PASS  stairs drag changes moves  moves 6
+PASS  stairs keyboard  
+PASS  ramp drag picks balanced  
+PASS  ramp keyboard to HIIT  
+PASS  circuit plate is a switch  
+PASS  rounds radios  
+PASS  warm-up notch  
+PASS  warm-down notch tap  
+PASS  focus tiles  
+PASS  build makes a circuit  
+PASS  add a move  
+PASS  remove a move  
+PASS  swap a move  Sit-ups -> Side Plank
+PASS  done tick  
+PASS  save as profile  
+PASS  tap does not start workout  
+PASS  nothing fits state  
+PASS  hold to go starts the player  
+PASS  pause  
+PASS  resume  
+PASS  tap on skip rail does not skip  
+PASS  slide to skip  
+PASS  skip by keyboard  
+PASS  end confirm pauses the clock  
+PASS  keep going resumes  
+PASS  log it logs and goes to Log  
+PASS  add move to library  
+PASS  edit move  
+PASS  remove move  
+PASS  stepper  
+PASS  save fixed profile  
+PASS  edit profile opens filled  
+PASS  keep it keeps profile  
+PASS  start profile builds today  
+PASS  7 Minute profile starts with 12 stations incl. step-up  Jumping Jacks,Wall Sit,Push-ups,Sit-ups,Step-up onto Chair,Bodyweight Squats,Tricep Dips,Plank Hold,High Knees,Walking Lunges,Bird Dog,Side Plank
+PASS  player shows the chair step-up figure  
+PASS  missing profile offers edit  
+PASS  open log entry  
+PASS  delete log entry  
+PASS  reduced motion stops the figure  running 0
+PASS  migration adds step-up and the 7 Minute profile  {"seven":1,"step":1}
+PASS  migration keeps user profiles and edits  
+PASS  existing user does not see Welcome  
+PASS  migration runs once (no duplicates on reload)  
+PASS  a deleted 7 Minute profile stays deleted  
+PASS  migration does not clobber a user profile of the same name  
+PASS  Log has Sessions and Progress sub-tabs  
+PASS  Progress numbers match the seeded log  {"done":"5","sub":"sessions finished, best month yet","stats":{"Minutes":"107","Streak":"3 days","Most done":"Push-ups"},"weeks":"0,1,1,0,1,1,3"}
+PASS  Sessions sub-tab lists the log  rows 7
+PASS  no network beyond the local server  
+PASS  no native confirm/prompt dialogs, no page errors  
+0 failed of 62

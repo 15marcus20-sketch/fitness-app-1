@@ -200,6 +200,16 @@ const DEFAULT_EXERCISES = [
     backMod: "Keep jumps tiny (1-2 inches). Land with soft ankles to prevent repetitive shock up the spine."
   },
   {
+    name: "Step-up onto Chair",
+    category: "strength",
+    duration: 4,
+    setsReps: "3 x 10/side",
+    equipment: ["Chair/Bench"],
+    pattern: "chairstep",
+    backClass: "spine-friendly",
+    backMod: "Use a sturdy chair pushed against a wall. Drive through the whole front foot and stand tall on top; hinge slightly from the hips, never round the lower back."
+  },
+  {
     name: "Stair Climbs", 
     category: "cardio", 
     duration: 8, 
