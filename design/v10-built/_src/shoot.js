@@ -10,7 +10,8 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, serviceWorkers: 'block' });
   // never touch the network beyond the local server
-  await ctx.route('**/*', r => r.request().url().startsWith(URL) ? r.continue() : r.abort());
+  const blocked = [];
+  await ctx.route('**/*', r => { if(r.request().url().startsWith(URL)) return r.continue(); blocked.push(r.request().url()); return r.abort(); });
   const p = await ctx.newPage();
   p.on('pageerror', e => errors.push('pageerror: ' + e.message));
   p.on('console', m => { if(m.type() === 'error') if(!/Save exercises failed/.test(m.text())) errors.push('console: ' + m.text()); });
@@ -27,7 +28,7 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   };
   const fresh = async () => {
     await p.goto(URL); await p.evaluate(() => localStorage.clear()); await p.goto(URL);
-    await p.waitForSelector('#view-today .title');
+    await p.waitForSelector('#view-welcome.active #getStartedBtn');
   };
   const tab = async v => { await p.click(`.tabs .tab[data-view="${v}"]`); await p.waitForTimeout(80); };
   const hold = async (sel, ms = 1500) => { const r = await p.locator(sel).boundingBox(); await p.mouse.move(r.x + r.width / 2, r.y + r.height / 2); await p.mouse.down(); await p.waitForTimeout(ms); await p.mouse.up(); };
@@ -37,9 +38,20 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   await p.route('**/js/app.js', async r => { await new Promise(res => setTimeout(res, 1500)); r.continue(); });
   await p.goto(URL, { waitUntil: 'commit' }); await p.waitForTimeout(700);
   await shot('1-start', '01-loading', 300);
-  await p.waitForSelector('#view-today .title');
+  await p.waitForSelector('.view.active');
   await p.unroute('**/js/app.js');
   await fresh();
+  ok('fresh install shows Welcome first', await p.evaluate(() => document.getElementById('view-welcome').classList.contains('active') && document.getElementById('tabbar').style.display === 'none'));
+  await shot('1-start', '02-welcome', 500);
+  await p.click('#getStartedBtn'); await p.waitForSelector('.gear');
+  ok('Get started leads into the gear picker', await p.evaluate(() => !!document.querySelector('.sheet .gear') && document.getElementById('view-today').classList.contains('active')));
+  ok('welcome flag stored', await p.evaluate(() => localStorage.getItem('on_track_welcomed') === '1'));
+  const seven = await p.evaluate(() => { const pr = profiles.filter(x => x.name === '7 Minute Workout'); return { n: pr.length, ids: pr[0] ? pr[0].exerciseIds.length : 0, ok: pr[0] ? pr[0].exerciseIds.every(id => exercises.some(e => e.id === id)) : false, step: exercises.filter(e => e.name === 'Step-up onto Chair').length }; });
+  ok('fresh install: 7 Minute profile exists with 12 moves', seven.n === 1 && seven.ids === 12 && seven.ok && seven.step === 1, JSON.stringify(seven));
+  await p.click('.sheet [data-close]');
+  await p.reload(); await p.waitForSelector('#view-today.active .title');
+  ok('Welcome shows only once', await p.evaluate(() => !document.getElementById('view-welcome').classList.contains('active') && document.getElementById('tabbar').style.display === 'flex'));
+  ok('reload does not duplicate the 7 Minute profile', await p.evaluate(() => profiles.filter(x => x.name === '7 Minute Workout').length === 1 && exercises.filter(e => e.name === 'Step-up onto Chair').length === 1));
   await p.click('#changeGearBtn'); await p.waitForSelector('.gear');
   for(const g of ['Kettlebell', 'Chair/Bench']) await p.click(`[data-geq="${g}"]`);
   ok('gear toggles persist', (await p.evaluate(() => JSON.parse(localStorage.getItem('on_track_userEquipment')))).length === 3);
@@ -235,9 +247,20 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   await p.click(`[data-delp="${await p.evaluate(() => profiles.find(x => x.name === 'Back day').id)}"]`);
   await shot('5-profiles', '05-delete-confirm', 0);
   await p.click('.sheet [data-a="s"]');
-  ok('keep it keeps profile', await p.evaluate(() => profiles.length) === 2);
+  ok('keep it keeps profile', await p.evaluate(() => profiles.length) === 3);
   await p.click(`[data-run="${await p.evaluate(() => profiles.find(x => x.name === 'Back day').id)}"]`);
   ok('start profile builds today', await p.evaluate(() => session.items.length > 0 && document.getElementById('view-today').classList.contains('active')));
+  // the built-in 7 Minute profile starts, step-up included
+  await tab('profiles');
+  await p.click(`[data-run="${await p.evaluate(() => profiles.find(x => x.name === '7 Minute Workout').id)}"]`);
+  const sm = await p.evaluate(() => ({ today: document.getElementById('view-today').classList.contains('active'), names: coreItems().map(i => i.name) }));
+  ok('7 Minute profile starts with 12 stations incl. step-up', sm.today && sm.names.length === 12 && sm.names[4] === 'Step-up onto Chair', sm.names.join(','));
+  await hold('#holdGo', 1700); await p.waitForSelector('#playerOverlay.show');
+  const si = await p.evaluate(() => session.items.findIndex(x => x.name === 'Step-up onto Chair'));
+  await p.evaluate(i => { clearTimeout(player.timerId); player.index = i; playerFigIndex = -1; beginWork(); clearTimeout(player.timerId); player.remaining = 24; renderPlayer(); }, si);
+  ok('player shows the chair step-up figure', await p.evaluate(() => !!document.querySelector('#playerOverlay .anim-chairstep .prop-chair')));
+  await shot('7-edge', '04-chair-stepup', 1150);
+  await p.evaluate(() => { const top = setTimeout(() => {}, 0); for(let i = 0; i <= top; i++) clearTimeout(i); closePlayerOverlay(); });
   // profile whose moves are gone
   await p.evaluate(() => { profiles.push({ id: 'gone', name: 'Old plan', mode: 'fixed', targetMinutes: 10, exerciseIds: ['nope'] }); renderProfiles(); });
   await tab('profiles');
@@ -273,6 +296,66 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   ok('reduced motion stops the figure', anims === 0, 'running ' + anims);
   await p.emulateMedia({ reducedMotion: 'no-preference' });
 
+  // ---------- existing-user migration ----------
+  const legacy = await p.evaluate(() => {
+    const ex = DEFAULT_EXERCISES.filter(e => e.name !== 'Step-up onto Chair').map((e, i) => ({ ...e, id: 'old' + i }));
+    ex.find(e => e.name === 'Push-ups').setsReps = '5 x 5';   // a user edit that must survive
+    return ex;
+  });
+  const seed = async extra => p.evaluate(([ex, extra]) => {
+    localStorage.clear();
+    localStorage.setItem('on_track_exercises', JSON.stringify(ex));
+    localStorage.setItem('on_track_profiles', JSON.stringify([{ id: 'mine', name: 'My mornings', mode: 'random', targetMinutes: 15, targetCount: 5, categories: [] }]));
+    localStorage.setItem('on_track_userEquipment', JSON.stringify(['Bodyweight']));
+    Object.entries(extra || {}).forEach(([k, v]) => localStorage.setItem(k, v));
+  }, [legacy, extra]);
+  await seed(); await p.reload(); await p.waitForSelector('#view-today.active .title');
+  const mg = async () => p.evaluate(() => ({ seven: profiles.filter(x => x.name === '7 Minute Workout').length, step: exercises.filter(e => e.name === 'Step-up onto Chair').length,
+    mine: profiles.filter(x => x.id === 'mine').length, first: profiles[0] && profiles[0].id, push: exercises.find(e => e.name === 'Push-ups').setsReps, n: exercises.length,
+    ids: (profiles.find(x => x.name === '7 Minute Workout') || {}).exerciseIds, welcome: document.getElementById('view-welcome').classList.contains('active') }));
+  let m1 = await mg();
+  ok('migration adds step-up and the 7 Minute profile', m1.seven === 1 && m1.step === 1 && m1.ids && m1.ids.length === 12, JSON.stringify({ seven: m1.seven, step: m1.step }));
+  ok('migration keeps user profiles and edits', m1.mine === 1 && m1.first === 'mine' && m1.push === '5 x 5' && m1.n === legacy.length + 1);
+  ok('existing user does not see Welcome', !m1.welcome);
+  await p.reload(); await p.waitForSelector('#view-today.active .title');
+  const m2 = await mg();
+  ok('migration runs once (no duplicates on reload)', m2.seven === 1 && m2.step === 1 && m2.n === m1.n);
+  await p.evaluate(() => { profiles = profiles.filter(x => x.name !== '7 Minute Workout'); saveProfiles(); });
+  await p.reload(); await p.waitForSelector('#view-today.active .title');
+  ok('a deleted 7 Minute profile stays deleted', (await mg()).seven === 0);
+  // a user who already had a profile with that name keeps theirs, untouched
+  await seed({ on_track_profiles: JSON.stringify([{ id: 'own7', name: '7 Minute Workout', mode: 'random', targetMinutes: 7, targetCount: 4, categories: [] }]) });
+  await p.reload(); await p.waitForSelector('#view-today.active .title');
+  ok('migration does not clobber a user profile of the same name', await p.evaluate(() => profiles.length === 1 && profiles[0].id === 'own7' && profiles[0].mode === 'random'));
+
+  // ---------- 6 LOG: Progress from a seeded log (clock fixed at Thu 20 Nov 2026, 10:00) ----------
+  const pp = await ctx.newPage();
+  pp.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  pp.on('console', m => { if(m.type() === 'error') errors.push('console: ' + m.text()); });
+  await pp.clock.setFixedTime(new Date(2026, 10, 20, 10, 0));
+  const S = (d, h, min, moves) => ({ id: 's' + d + h, date: new Date(2026, d < 0 ? 9 : 10, Math.abs(d), h, 5).toISOString(), targetMinutes: min, actualMinutes: min, categories: [], circuit: false, intensity: 'balanced',
+    completedCount: moves.length, totalCount: moves.length, exercises: [{ name: 'Warm-Up: Jumping Jacks', done: true, duration: 1 }, { name: 'Drinks Break & Catch Breath', done: true, duration: 1 }, ...moves.map(n => ({ name: n, category: 'strength', duration: 3, done: n !== 'Plank Hold' }))] });
+  const LOG = [S(20, 7, 26, ['Push-ups', 'Plank Hold', 'Bird Dog']), S(19, 7, 20, ['Push-ups', 'Wall Sit']), S(18, 18, 12, ['Push-ups', 'Bird Dog']), S(14, 9, 31, ['Wall Sit', 'Bird Dog', 'Plank Hold']),
+    S(3, 7, 18, ['Push-ups']), S(-22, 7, 25, ['Sit-ups']), S(-15, 7, 25, ['Sit-ups'])];
+  await pp.goto(URL);
+  await pp.evaluate(log => { localStorage.setItem('on_track_history', JSON.stringify(log)); localStorage.setItem('on_track_welcomed', '1'); }, LOG);
+  await pp.reload(); await pp.waitForSelector('#view-today.active .title');
+  await pp.click('.tabs .tab[data-view="history"]');
+  ok('Log has Sessions and Progress sub-tabs', await pp.evaluate(() => document.querySelectorAll('#view-history [data-ltab]').length === 2));
+  await pp.click('[data-ltab="progress"]');
+  const pg = await pp.evaluate(() => ({ done: document.getElementById('progDone').firstChild.textContent.trim(), sub: document.querySelector('#view-history .lab.muted').textContent,
+    stats: Object.fromEntries([...document.querySelectorAll('[data-stat]')].map(e => [e.dataset.stat, e.textContent])), weeks: progressStats().weeks.join(',') }));
+  // Nov: 5 sessions, 26+20+12+31+18 = 107 min, streak 18-19-20 = 3 days, push-ups ticked 4 times; Oct had 2, so best month
+  ok('Progress numbers match the seeded log', pg.done === '5' && pg.stats.Minutes === '107' && pg.stats.Streak === '3 days' && pg.stats['Most done'] === 'Push-ups' && /best month yet/.test(pg.sub) && pg.weeks === '0,1,1,0,1,1,3', JSON.stringify(pg));
+  fs.mkdirSync(`${OUT}/6-log`, { recursive: true });
+  await pp.evaluate(() => document.fonts.ready); await pp.waitForTimeout(260);
+  await pp.evaluate(() => { for(const a of document.getAnimations()) { a.pause(); a.currentTime = 0; } });
+  await pp.screenshot({ path: `${OUT}/6-log/05-progress.png` });
+  await pp.click('[data-ltab="sessions"]'); await pp.waitForSelector('[data-toggle-hist]', { timeout: 3000 }).catch(() => {});
+  const nS = await pp.evaluate(() => document.querySelectorAll('[data-toggle-hist]').length); ok('Sessions sub-tab lists the log', nS === 7, 'rows ' + nS);
+  await pp.close();
+
+  ok('no network beyond the local server', blocked.length === 0, blocked.join(' '));
   ok('no native confirm/prompt dialogs, no page errors', errors.length === 0, errors.join(' | '));
   for(const r of results) console.log(r.join('  '));
   console.log(results.filter(r => r[0] === 'FAIL').length + ' failed of ' + results.length);
