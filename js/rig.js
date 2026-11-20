@@ -17,6 +17,7 @@ const PATTERN_OPTIONS = [
   {key:"pullup", label:"Pull-up"},
   {key:"bridge", label:"Hip bridge"},
   {key:"stepup", label:"Step-up / stair"},
+  {key:"chairstep", label:"Step-up onto chair"},
   {key:"stretch", label:"Static stretch"},
   {key:"forwardfold", label:"Forward fold"},
   {key:"catcow", label:"Cat-cow flow"},
@@ -44,6 +45,7 @@ function patternForExercise(ex){
 function buildFigureSVG(pattern, sizeClass){
   return `<svg class="illustration ${sizeClass||''} anim-${pattern}" viewBox="0 0 120 160" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <line class="floor" x1="56" y1="155" x2="96" y2="155"/>
+    <g class="prop prop-chair"><line x1="63" y1="134" x2="96" y2="134"/><line x1="66" y1="134" x2="66" y2="152"/><line x1="93" y1="134" x2="93" y2="152"/><line x1="93" y1="134" x2="93" y2="106"/></g>
     <g class="rig">
       <g transform="translate(60,90)">
         <g class="bodyRotate">
