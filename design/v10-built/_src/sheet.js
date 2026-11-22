@@ -3,7 +3,7 @@
 const { chromium } = require(process.argv[2]);
 const fs = require('fs'), path = require('path');
 const D = path.resolve(process.argv[3]), B = D + '/v10-built', only = process.argv[4];
-const TITLES = { '1-start': 'Start', '2-today': 'Today and builder', '3-player': 'Workout player', '4-library': 'Library', '5-profiles': 'Profiles', '6-log': 'Log', '7-edge': 'Edge states' };
+const TITLES = { '1-start': 'Start', '2-today': 'Today and builder', '3-player': 'Workout player', '4-library': 'Library', '5-profiles': 'Profiles', '6-log': 'Log', '7-edge': 'Edge states', '8-setup': 'One-page setup' };
 const V9 = { '2-today/02-adjust-time': '02-adjust-time', '2-today/03-adjust-more': '03-adjust-more', '2-today/04-ready': '04-ready', '3-player/02-work': '05-player' };
 (async () => {
   const b = await chromium.launch();

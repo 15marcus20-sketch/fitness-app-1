@@ -816,42 +816,82 @@ function openInstallSheet(){
   });
 }
 
-/* ---------------- Adjust sheet (Scrub controls) ---------------- */
+/* ---------------- Setup page: every builder setting on one snapping page ----------------
+   T-Bone (20 Nov 2026): all the setup on one screen, "bang bang bang go", scrolling like
+   the original app. Each section is one screen and snaps into place (CSS scroll-snap);
+   the Scrub controls are the Round 9 ones, unchanged, and take touch-action:none so a
+   sideways drag on them never scrolls the page. Hold to go sits at the bottom. */
+const SETUP_SECTIONS = ['time', 'moves', 'intensity', 'circuit', 'warm', 'focus', 'gear', 'go'];
+const SETUP_NAMES = ['Total time', 'Moves', 'Intensity', 'Circuit', 'Warm-up and down', 'Focus', 'Your gear', 'Go'];
+let setupOpen = false;   // the Today tab shows the setup page even before a workout is built
+let setupDraw = null;    // repaints the controls from `session`
+
+function prefersReducedMotion(){ return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function scrollToSection(name, instant){
+  const el = document.getElementById('sec-' + name);
+  if(!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: instant || prefersReducedMotion() ? 'instant' : 'smooth' });
+}
+// Old entry point (list view, Nothing fits, landing): open the setup page at the top.
 function openAdjust(){
+  setupOpen = true; todayView = 'ready';
+  if(session.items.length === 0) generateSession(); else renderToday();
+  setView('today');
+  scrollToSection('time', true);
+}
+
+function setupHtml(){
+  const N = SETUP_SECTIONS.length;
   const tks = [5, 15, 30, 45, 60].map(v => `<span style="left:${(v - 5) / 55 * 100}%">${v}</span>`).join('');
   const stairs = Array.from({ length: 15 }, (_, k) => `<i data-lv="${k + 1}" style="height:${(22 + 78 * k / 14).toFixed(0)}%"></i>`).join('');
   const plate = (id, lab) => `<button class="plt" id="${id}" role="switch" aria-label="${lab}"><span class="pi"><span class="fa f1"><span>On</span></span><span class="fa f2"><span>Off</span></span></span></button>`;
-  const sh = openSheet(`<div class="bar" style="margin-bottom:18px"></div>
-    <div class="row" style="align-items:baseline"><h2 class="D" id="sheetTitle" style="font-size:60px">Adjust</h2><button class="lnk" data-close>Close</button></div>
-    <div class="row" style="margin-top:14px"><span class="lab">Total time</span><span class="hint">Drag the number</span></div>
-    <div class="scr" id="ctlTime"><div class="tk"></div><div class="fb"></div><div class="ed"></div><div class="D num" aria-hidden="true"><span id="valTime"></span><small> min</small></div></div>
-    <div class="tks" aria-hidden="true">${tks}</div>
-    <div class="row" style="margin-top:16px"><span class="lab">Moves</span><span class="hint">Run your thumb up the steps</span></div>
-    <div class="row" style="gap:16px;margin-top:6px;align-items:flex-end"><div style="width:84px" aria-hidden="true"><div class="D" style="font-size:96px" id="valMoves"></div></div>
-      <div class="stairs" id="ctlMoves">${stairs}</div></div>
-    <div class="row" style="margin-top:16px"><span class="lab">Intensity</span><span class="hint">Push him up the ramp</span></div>
-    <div class="ramp" id="ctlInt"><div class="w"></div><div class="wf"></div><div class="fig live" id="fint" aria-hidden="true"></div>
-      ${INT_KEYS.map((k, i) => `<div class="cap" style="left:${i * 33.33}%" aria-hidden="true"><b>${INT_LABEL[k]}</b>${INT_SUB[i]}</div>`).join('')}</div>
+  const gear = EQUIPMENT_OPTIONS.map(eq => {
+    const [n, sub] = GEAR_COPY[eq] || [eq, ''];
+    return `<button aria-pressed="${userEquipment.includes(eq)}" data-geq="${escapeAttr(eq)}"><span class="D2">${n}</span><small>${sub}</small></button>`;
+  }).join('');
+  const sec = (i, body) => `<section class="snap" id="sec-${SETUP_SECTIONS[i]}" aria-label="${SETUP_NAMES[i]}">${body}
+    ${i < N - 1 ? `<button class="lnk nx" data-goto="${SETUP_SECTIONS[i + 1]}">Next: ${SETUP_NAMES[i + 1]} <span aria-hidden="true">&darr;</span></button>` : ''}</section>`;
+  const hd = (i, title, right = '') => `<div class="hdr row lab"><span>Set up · ${i + 1} of ${N}</span>${right}</div><h2 class="D title l">${title}</h2>`;
+  return [
+    sec(0, `<div class="hdr row lab"><span>${greeting()}</span><span id="instSlot"></span></div><h1 class="D title xl">Today</h1>
+      <div class="row" style="margin-top:22px"><span class="lab">Total time</span><span class="hint">Drag the number</span></div>
+      <div class="scr" id="ctlTime"><div class="tk"></div><div class="fb"></div><div class="ed"></div><div class="D num" aria-hidden="true"><span id="valTime"></span><small> min</small></div></div>
+      <div class="tks" aria-hidden="true">${tks}</div>`),
+    sec(1, `${hd(1, 'Moves')}
+      <div class="row" style="margin-top:22px"><span class="lab">How many</span><span class="hint">Run your thumb up the steps</span></div>
+      <div class="row" style="gap:16px;margin-top:6px;align-items:flex-end"><div style="width:84px" aria-hidden="true"><div class="D" style="font-size:96px" id="valMoves"></div></div>
+        <div class="stairs" id="ctlMoves">${stairs}</div></div>`),
+    sec(2, `${hd(2, 'Intensity')}
+      <div class="row" style="margin-top:22px"><span class="lab">How hard</span><span class="hint">Push him up the ramp</span></div>
+      <div class="ramp" id="ctlInt"><div class="w"></div><div class="wf"></div><div class="fig live" id="fint" aria-hidden="true"></div>
+        ${INT_KEYS.map((k, i) => `<div class="cap" style="left:${i * 33.33}%" aria-hidden="true"><b>${INT_LABEL[k]}</b>${INT_SUB[i]}</div>`).join('')}</div>`),
+    sec(3, `${hd(3, 'Circuit')}
+      <div class="row" style="margin-top:22px"><div><div class="t17">Circuit</div><div class="s14">Rounds, drinks break between</div></div>${plate('tgCirc', 'Circuit')}</div>
+      <div class="row" id="ifCirc" style="gap:14px;margin-top:18px;align-items:flex-end"><div style="width:84px" aria-hidden="true"><div class="D" style="font-size:76px" id="valRounds"></div><div class="lab">rounds</div></div>
+        <div class="stk" id="ctlRounds">${[2, 3, 4, 5].map(n => `<button data-val="${n}" aria-label="${n} rounds"><i><b>${n}</b></i></button>`).join('')}</div></div>`),
+    sec(4, `${hd(4, 'Warm up')}
+      <div class="row" style="margin-top:22px"><div><div class="t17">Warm-up</div><div class="s14">Jumping jacks, light pace</div></div>${plate('tgWu', 'Warm-up')}</div>
+      <div class="row" id="ifWu" style="gap:14px;margin-top:10px"><div class="D" style="font-size:52px;width:84px" id="valWu" aria-hidden="true"></div>
+        <div class="notch" id="ctlWu">${WU_SECS.map((s, i) => `<i data-lv="${i}"><span>${mmss(s)}</span></i>`).join('')}</div></div>
+      <div class="row" style="margin-top:28px"><div><div class="t17">Warm-down</div><div class="s14">Yoga stretch and mobility</div></div>${plate('tgWd', 'Warm-down')}</div>
+      <div class="row" id="ifWd" style="gap:14px;margin-top:10px"><div class="D" style="font-size:40px;width:84px;white-space:nowrap" id="valWd" aria-hidden="true"></div>
+        <div class="notch" id="ctlWd">${WD_SECS.map((s, i) => `<i data-lv="${i}"><span>${s / 60} min</span></i>`).join('')}</div></div>`),
+    sec(5, `${hd(5, 'Focus')}
+      <div class="t17" style="margin-top:22px" id="lblFocus">Focus <span class="s14" style="font-weight:400">optional, pick any</span></div>
+      <div class="tiles" role="group" aria-labelledby="lblFocus">${FOCUS.map(c => `<button role="checkbox" data-cat="${c}"><span>${CAT_LABEL[c]}</span></button>`).join('')}</div>
+      <p class="body muted" id="sumPlan" aria-live="polite" style="margin-top:12px;font-size:15px"></p>`),
+    sec(6, `${hd(6, 'Your gear', `<span id="gearCount">${userEquipment.length} picked</span>`)}
+      <p class="body muted" style="margin-top:10px">Tap what you have at home.</p>
+      <div class="gear" role="group" aria-label="Your gear" style="margin-top:12px">${gear}</div>`),
+    sec(7, `<div id="setupGo" style="display:contents"></div>`)
+  ].join('');
+}
 
-    <div class="row" style="margin-top:22px"><div><div class="t17">Circuit</div><div class="s14">Rounds, drinks break between</div></div>${plate('tgCirc', 'Circuit')}</div>
-    <div class="row" id="ifCirc" style="gap:14px;margin-top:10px;align-items:flex-end"><div style="width:84px" aria-hidden="true"><div class="D" style="font-size:76px" id="valRounds"></div><div class="lab">rounds</div></div>
-      <div class="stk" id="ctlRounds">${[2, 3, 4, 5].map(n => `<button data-val="${n}" aria-label="${n} rounds"><i><b>${n}</b></i></button>`).join('')}</div></div>
-    <div class="row" style="margin-top:14px"><div><div class="t17">Warm-up</div><div class="s14">Jumping jacks, light pace</div></div>${plate('tgWu', 'Warm-up')}</div>
-    <div class="row" id="ifWu" style="gap:14px;margin-top:10px"><div class="D" style="font-size:52px;width:84px" id="valWu" aria-hidden="true"></div>
-      <div class="notch" id="ctlWu">${WU_SECS.map((s, i) => `<i data-lv="${i}"><span>${mmss(s)}</span></i>`).join('')}</div></div>
-    <div class="row" style="margin-top:14px"><div><div class="t17">Warm-down</div><div class="s14">Yoga stretch and mobility</div></div>${plate('tgWd', 'Warm-down')}</div>
-    <div class="row" id="ifWd" style="gap:14px;margin-top:10px"><div class="D" style="font-size:40px;width:84px;white-space:nowrap" id="valWd" aria-hidden="true"></div>
-      <div class="notch" id="ctlWd">${WD_SECS.map((s, i) => `<i data-lv="${i}"><span>${s / 60} min</span></i>`).join('')}</div></div>
-    <div class="t17" style="margin-top:14px" id="lblFocus">Focus <span class="s14" style="font-weight:400">optional, pick any</span></div>
-    <div class="tiles" role="group" aria-labelledby="lblFocus">${FOCUS.map(c => `<button role="checkbox" data-cat="${c}"><span>${CAT_LABEL[c]}</span></button>`).join('')}</div>
-    <p class="body muted" id="sumPlan" aria-live="polite" style="margin-top:12px;font-size:15px"></p>
-    <div style="position:sticky;bottom:calc(-34px - var(--safe-b));margin:0 -22px;padding:14px 16px calc(34px + var(--safe-b));background:var(--paper)">
-      <button class="b1" id="buildBtn"><span>Build workout</span></button></div>`, { cls: 'tall' });
-  sh.style.paddingBottom = '0';
-
-  const regen = () => { if(session.items.length > 0) generateSession(); else renderToday(); };
+function bindSetup(sh){
+  const regen = () => { if(session.items.length > 0 || lastBuildFailed) generateSession(); else renderToday(); };
   let figPat = null;
   const draw = () => {
+    if(!sh.isConnected || !sh.querySelector('#ctlTime')) return;
     const t = (session.targetMinutes - 5) / 55;
     const scr = sh.querySelector('#ctlTime');
     scr.style.setProperty('--v', t);
@@ -884,39 +924,94 @@ function openAdjust(){
     sh.querySelectorAll('#ctlWu i').forEach(i => { i.classList.toggle('lit', +i.dataset.lv <= wu); i.classList.toggle('on', +i.dataset.lv === wu); });
     sh.querySelectorAll('#ctlWd i').forEach(i => { i.classList.toggle('lit', +i.dataset.lv <= wd); i.classList.toggle('on', +i.dataset.lv === wd); });
     sh.querySelectorAll('.tiles [data-cat]').forEach(b => b.setAttribute('aria-checked', session.categories.includes(b.dataset.cat)));
+    sh.querySelectorAll('[data-geq]').forEach(b => b.setAttribute('aria-pressed', userEquipment.includes(b.dataset.geq)));
+    sh.querySelector('#gearCount').textContent = `${userEquipment.length} picked`;
     sh.querySelector('#sumPlan').textContent = planSummary();
   };
-
-  bindScrub(sh.querySelector('#ctlTime'), { label: 'Total time', min: 5, max: 60,
+  const sliders = [];
+  sliders.push(bindScrub(sh.querySelector('#ctlTime'), { label: 'Total time', min: 5, max: 60,
     get: () => session.targetMinutes, set: v => { session.targetMinutes = v; rescaleIfNeeded(); draw(); },
     map: (e, r) => Math.round(5 + clampN((e.clientX - r.left - 22) / (r.width - 44), 0, 1) * 55),
-    text: v => v + ' minutes', onEnd: () => renderToday() });
-  bindScrub(sh.querySelector('#ctlMoves'), { label: 'Moves', min: 2, max: 15,
+    text: v => v + ' minutes', onEnd: () => renderToday() }));
+  sliders.push(bindScrub(sh.querySelector('#ctlMoves'), { label: 'Moves', min: 2, max: 15,
     get: () => session.targetCount, set: v => { session.targetCount = v; draw(); },
-    map: (e, r) => Math.max(2, Math.ceil(fracX(e, r) * 15)), text: v => v + ' moves', onEnd: regen });
-  bindScrub(sh.querySelector('#ctlInt'), { label: 'Intensity', min: 0, max: 2,
+    map: (e, r) => Math.max(2, Math.ceil(fracX(e, r) * 15)), text: v => v + ' moves', onEnd: regen }));
+  sliders.push(bindScrub(sh.querySelector('#ctlInt'), { label: 'Intensity', min: 0, max: 2,
     get: () => Math.max(0, INT_KEYS.indexOf(session.intensity)), set: v => { session.intensity = INT_KEYS[v]; draw(); },
     map: (e, r) => Math.floor(fracX(e, r) * 3), text: v => INT_LABEL[INT_KEYS[v]] + ', ' + INT_SUB[v].toLowerCase(),
-    onEnd: () => { if(session.items.length > 0) rescaleIfNeeded(); renderToday(); } });
-  bindScrub(sh.querySelector('#ctlWu'), { label: 'Warm-up length', min: 0, max: 3,
+    onEnd: () => { if(session.items.length > 0) rescaleIfNeeded(); renderToday(); } }));
+  sliders.push(bindScrub(sh.querySelector('#ctlWu'), { label: 'Warm-up length', min: 0, max: 3,
     get: () => Math.max(0, WU_SECS.indexOf(session.warmupSeconds)), set: v => { session.warmupSeconds = WU_SECS[v]; draw(); },
-    map: (e, r) => Math.floor(fracX(e, r) * 4), text: v => mmss(WU_SECS[v]) + ' warm-up', onEnd: regen });
-  bindScrub(sh.querySelector('#ctlWd'), { label: 'Warm-down length', min: 0, max: 2,
+    map: (e, r) => Math.floor(fracX(e, r) * 4), text: v => mmss(WU_SECS[v]) + ' warm-up', onEnd: regen }));
+  sliders.push(bindScrub(sh.querySelector('#ctlWd'), { label: 'Warm-down length', min: 0, max: 2,
     get: () => Math.max(0, WD_SECS.indexOf(session.cooldownSeconds)), set: v => { session.cooldownSeconds = WD_SECS[v]; draw(); },
-    map: (e, r) => Math.floor(fracX(e, r) * 3), text: v => (WD_SECS[v] / 60) + ' minute warm-down', onEnd: regen });
-  bindRadios(sh.querySelector('#ctlRounds'), { label: 'Rounds', get: () => session.circuitRounds,
+    map: (e, r) => Math.floor(fracX(e, r) * 3), text: v => (WD_SECS[v] / 60) + ' minute warm-down', onEnd: regen }));
+  const rounds = bindRadios(sh.querySelector('#ctlRounds'), { label: 'Rounds', get: () => session.circuitRounds,
     set: v => { session.circuitRounds = parseInt(v); draw(); regen(); } });
   sh.querySelector('#tgCirc').addEventListener('click', () => { session.circuit = !session.circuit; draw(); regen(); });
-  sh.querySelector('#tgWu').addEventListener('click', () => { session.warmup = !session.warmup; draw(); if(session.items.length > 0) generateSession(); });
-  sh.querySelector('#tgWd').addEventListener('click', () => { session.cooldown = !session.cooldown; draw(); if(session.items.length > 0) generateSession(); });
+  sh.querySelector('#tgWu').addEventListener('click', () => { session.warmup = !session.warmup; draw(); if(session.items.length > 0) generateSession(); else renderToday(); });
+  sh.querySelector('#tgWd').addEventListener('click', () => { session.cooldown = !session.cooldown; draw(); if(session.items.length > 0) generateSession(); else renderToday(); });
   sh.querySelectorAll('.tiles [data-cat]').forEach(b => b.addEventListener('click', () => {
     const cat = b.dataset.cat, idx = session.categories.indexOf(cat);
     if(idx > -1) session.categories.splice(idx, 1); else session.categories.push(cat);
     draw(); renderToday();
   }));
-  sh.querySelector('#buildBtn').addEventListener('click', () => { closeSheet(true); todayView = 'ready'; generateSession(); window.scrollTo(0, 0); });
+  sh.querySelectorAll('[data-geq]').forEach(card => card.addEventListener('click', async () => {
+    const eq = card.dataset.geq, idx = userEquipment.indexOf(eq);
+    if(idx > -1) userEquipment.splice(idx, 1); else userEquipment.push(eq);
+    draw();
+    await saveUserEquipment();
+    regen();
+  }));
+  sh.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => scrollToSection(b.dataset.goto)));
+  // Values can change from outside (a profile run, Clear focus): keep the ARIA state in step too.
+  setupDraw = () => { draw(); sliders.forEach(s => s.sync()); rounds.sync(); };
+  // Positions depend on layout (and the view may be hidden when first built).
+  if(window.ResizeObserver) new ResizeObserver(() => draw()).observe(sh.querySelector('#ctlTime'));
   draw();
-  requestAnimationFrame(draw); // positions depend on layout
+  requestAnimationFrame(draw);
+}
+
+// The last section: the ready summary and Hold to go (or what to do when nothing is built).
+function renderSetupGo(go){
+  const N = SETUP_SECTIONS.length;
+  const hdr = right => `<div class="hdr row lab"><span>Set up · ${N} of ${N}</span>${right || ''}</div>`;
+  if(session.items.length === 0){
+    const cats = session.categories.map(c => CAT_LABEL[c]);
+    go.innerHTML = lastBuildFailed ? `${hdr()}
+      ${band(290, `<div class="D wht abs" style="left:22px;top:30px;font-size:84px">Nothing<br>fits</div>
+        ${fig('forwardfold', 'small', 'right:-6px;top:40px;width:160px;height:230px')}`)}
+      <p class="pad body" style="padding-top:26px">No moves match. Your gear is ${escapeHtml(listJoin(userEquipment.map(e => gearName(e).toLowerCase())) || 'nothing yet')}${cats.length ? `, and the focus is ${escapeHtml(listJoin(cats))}` : ''}.</p>
+      <div class="actions push">
+        <button class="b1" id="changeGearBtn"><span>Change gear</span></button>
+        ${cats.length ? `<button class="b2" id="clearFocusBtn">Clear focus</button>` : `<button class="b2" id="genBtn">Try again</button>`}
+      </div>` : `${hdr()}
+      ${band(290, `<div class="D wht abs" style="left:22px;top:30px;font-size:76px">Ready<br>when<br>you are</div>
+        ${fig('warrior', 'small', 'right:-24px;top:90px;width:170px;height:200px')}`)}
+      <p class="pad body muted" style="padding-top:26px">${escapeHtml(gearSentence())}</p>
+      <div class="actions push"><button class="b1" id="genBtn"><span>Build my workout</span></button></div>`;
+  } else {
+    const totalSec = session.items.reduce((s, e) => s + itemSeconds(e), 0);
+    const uniq = uniqueCore();
+    const tweaks = uniq.filter(e => e.backClass === 'requires-mod').length;
+    const lines = [`${uniq.length} moves`];
+    if(session.circuit) lines.push(`${session.circuitRounds} rounds`);
+    if(tweaks) lines.push(`${tweaks} back tweak${tweaks > 1 ? 's' : ''}`);
+    const names = uniq.map(e => lc1(disp(e.name)));
+    go.innerHTML = `${hdr(`<button class="lnk" id="seeListTop">See the list</button>`)}
+      ${band(330, `<div class="abs" style="left:22px;top:30px"><div class="D wht" id="readyTime" style="font-size:110px">${mmss(totalSec)}</div><div class="lab wht" style="margin-top:8px">${escapeHtml(focusText(session.categories))}</div></div>
+        ${fig('jumpingjack', 'small', 'right:-6px;top:40px;width:210px;height:280px', 'readyFig')}
+        <div class="lab abs" style="left:22px;bottom:30px;line-height:1.5">${lines.join('<br>')}</div>`)}
+      <p class="pad body muted" style="padding-top:26px">${escapeHtml(uc1(names.join(', ')))}. <button class="lnk u" id="seeListBtn" style="color:var(--ink)">See the list</button></p>
+      <div class="actions push">${holdBtn('holdGo', 'Hold to go')}</div>`;
+  }
+  const on = (id, fn) => { const el = go.querySelector('#' + id); if(el) el.addEventListener('click', fn); };
+  on('genBtn', () => { generateSession(); });
+  on('changeGearBtn', () => scrollToSection('gear'));
+  on('clearFocusBtn', () => { session.categories = []; lastBuildFailed = false; renderToday(); });
+  const list = () => { todayView = 'list'; renderToday(); window.scrollTo(0, 0); };
+  on('seeListBtn', list); on('seeListTop', list);
+  bindGo(go, 'readyFig');
 }
 
 /* ---------------- Render: Today ---------------- */
@@ -946,6 +1041,22 @@ function renderToday(){
   const root = document.getElementById('view-today');
   const installLink = installAvailable ? `<button class="lnk" id="installLink">Install</button>` : '';
   const head = (right = '') => `<div class="hdr row lab"><span>${greeting()}</span>${right}${installLink}</div><h1 class="D title xl">Today</h1>`;
+
+  const showSetup = session.items.length > 0 ? todayView !== 'list' : setupOpen;
+  if(showSetup){
+    if(!root.classList.contains('setup') || !root.querySelector('#setupGo')){
+      root.innerHTML = setupHtml();
+      root.classList.add('setup');
+      bindSetup(root);
+    } else if(setupDraw) setupDraw();
+    const slot = root.querySelector('#instSlot');
+    slot.innerHTML = installLink;
+    const il = slot.querySelector('#installLink'); if(il) il.addEventListener('click', openInstallSheet);
+    renderSetupGo(root.querySelector('#setupGo'));
+    return;
+  }
+  root.classList.remove('setup');
+  setupDraw = null;
 
   if(session.items.length === 0){
     const cats = session.categories.map(c => CAT_LABEL[c]);
@@ -995,30 +1106,17 @@ function renderToday(){
         ${holdBtn('holdGo', 'Hold to start', 'sm')}
         <div class="row" style="justify-content:space-between"><button class="lnk" id="hideListBtn">Back</button><button class="lnk" id="finishBtn">Already did it? Log it</button><button class="lnk" id="adjustBtn">Adjust</button></div>
       </div>`;
-  } else {
-    const totalSec = session.items.reduce((s, e) => s + itemSeconds(e), 0);
-    const uniq = uniqueCore();
-    const tweaks = uniq.filter(e => e.backClass === 'requires-mod').length;
-    const lines = [`${uniq.length} moves`];
-    if(session.circuit) lines.push(`${session.circuitRounds} rounds`);
-    if(tweaks) lines.push(`${tweaks} back tweak${tweaks > 1 ? 's' : ''}`);
-    const names = uniq.map(e => lc1(disp(e.name)));
-    root.innerHTML = `${head(`<button class="lnk" id="adjustBtn" style="margin-left:auto;margin-right:${installAvailable ? '16px' : '0'}">Adjust</button>`)}
-      ${band(390, `<div class="abs" style="left:22px;top:30px"><div class="D wht" id="readyTime" style="font-size:110px">${mmss(totalSec)}</div><div class="lab wht" style="margin-top:8px">${escapeHtml(focusText(session.categories))}</div></div>
-        ${fig('jumpingjack', 'small', 'right:-6px;top:60px;width:230px;height:310px', 'readyFig')}
-        <div class="lab abs" style="left:22px;bottom:30px;line-height:1.5">${lines.join('<br>')}</div>`)}
-      <p class="pad body muted" style="padding-top:26px">${escapeHtml(uc1(names.join(', ')))}. <button class="lnk u" id="seeListBtn" style="color:var(--ink)">See the list</button></p>
-      <div class="actions push">${holdBtn('holdGo', 'Hold to go')}</div>`;
   }
 
   const on = (id, fn) => { const el = root.querySelector('#' + id); if(el) el.addEventListener('click', fn); };
-  on('genBtn', () => { todayView = 'ready'; generateSession(); });
+  // Build my workout: straight to the bottom of the setup page, ready to hold and go
+  on('genBtn', () => { setupOpen = true; todayView = 'ready'; generateSession(); scrollToSection('go', true); });
   on('adjustBtn', openAdjust);
   on('changeGearBtn', openGearSheet);
   on('installLink', openInstallSheet);
   on('clearFocusBtn', () => { session.categories = []; lastBuildFailed = false; renderToday(); });
   on('seeListBtn', () => { todayView = 'list'; renderToday(); window.scrollTo(0, 0); });
-  on('hideListBtn', () => { todayView = 'ready'; renderToday(); window.scrollTo(0, 0); });
+  on('hideListBtn', () => { todayView = 'ready'; renderToday(); scrollToSection('go', true); });
   on('finishBtn', finishSession);
   on('saveProfileBtn', saveCurrentAsProfile);
   on('addRandomBtn', addRandomToSession);
