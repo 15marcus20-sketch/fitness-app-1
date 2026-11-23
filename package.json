@@ -4,7 +4,7 @@
   "description": "ON TRACK - Precision Session Builder, Workout Timer & Movement Library",
   "main": "index.html",
   "scripts": {
-    "prepare-assets": "mkdir -p www && cp -R index.html manifest.webmanifest sw.js css js icons fonts www/",
+    "prepare-assets": "mkdir -p www && cp -R index.html manifest.webmanifest sw.js css js icons www/",
     "cap:add": "npm run prepare-assets && npx cap add android",
     "cap:sync": "npm run prepare-assets && npx cap sync android",
     "cap:open": "npx cap open android",
