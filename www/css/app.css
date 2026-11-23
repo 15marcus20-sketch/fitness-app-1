@@ -312,16 +312,3 @@ select.inp{-webkit-appearance:none;appearance:none;background:transparent url("d
 /* ---------- welcome (first run) ---------- */
 #view-welcome{padding-bottom:calc(var(--safe-b) + 18px)}
 #view-welcome .actions.push{position:static;padding-bottom:16px}
-
-/* ---------- one-page setup (Today): every section is a screen and snaps into place ---------- */
-html:has(#view-today.active.setup){scroll-snap-type:y mandatory}
-#view-today.setup{padding-bottom:calc(var(--tabh) + var(--safe-b))}
-.snap{min-height:calc(100vh - var(--tabh) - var(--safe-b));min-height:calc(100dvh - var(--tabh) - var(--safe-b));
-  scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;padding:0 22px 14px;position:relative;flex:none}
-.snap .hdr{padding-left:0;padding-right:0}
-.snap .title{padding-left:0;padding-right:0;margin-left:-4px}
-.snap .band{margin-left:-22px;margin-right:-22px}
-.snap .pad{padding-left:0;padding-right:0}
-#view-today .snap .actions.push{position:static;padding:16px 0 0;margin-top:auto}
-.snap .nx{margin-top:auto;align-self:flex-start;padding-top:18px}
-.snap .nx span{text-decoration:none;display:inline-block;margin-left:6px}

@@ -19,28 +19,14 @@ PASS  warm-up notch
 PASS  warm-down notch tap  
 PASS  focus tiles  
 PASS  build makes a circuit  
-PASS  setup: every builder setting and Hold to go are on the one Today page, no sheet  
-PASS  setup: page snaps on the y axis, each section aligned to start  
-PASS  setup: scrolling snaps section by section to the end  tops 0,766,1532,2298,3064,3830,4596,5362 landed 766,1532,2298,3064,3830,4596,5362
-PASS  setup: a part-scroll settles on a section  at 2298
-PASS  setup: scrolls back to the top section  
-PASS  setup: Next link moves to the next section  
-PASS  setup: Scrub controls take touch-action none  
-PASS  setup: gear tile on the page toggles and saves  
-PASS  setup: keyboard keeps focus on the control across rebuilds  
-PASS  setup: Go summary follows the controls without moving the page  24:46 -> 24:40 {"n":24,"c":8,"y":766,"y0":766}
-PASS  setup: sideways touch drag on the time scrub changes it and does not scroll the page  min 20->45 scrollY 0->0
-PASS  setup: a touch swipe off the controls scrolls and snaps to the next section  scrollY 766 next 766
-PASS  setup: reduced motion moves between sections without animating  
 PASS  add a move  
 PASS  remove a move  
-PASS  swap a move  Walking Lunges -> Goblet Squats
+PASS  swap a move  Sit-ups -> Side Plank
 PASS  done tick  
 PASS  save as profile  
 PASS  tap does not start workout  
 PASS  nothing fits state  
 PASS  hold to go starts the player  
-PASS  setup: the player is its own full screen over the setup page  
 PASS  pause  
 PASS  resume  
 PASS  tap on skip rail does not skip  
@@ -74,4 +60,4 @@ PASS  Progress numbers match the seeded log  {"done":"5","sub":"sessions finishe
 PASS  Sessions sub-tab lists the log  rows 7
 PASS  no network beyond the local server  
 PASS  no native confirm/prompt dialogs, no page errors  
-0 failed of 76
+0 failed of 62

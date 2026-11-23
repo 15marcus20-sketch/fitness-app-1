@@ -32,8 +32,6 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   };
   const tab = async v => { await p.click(`.tabs .tab[data-view="${v}"]`); await p.waitForTimeout(80); };
   const hold = async (sel, ms = 1500) => { const r = await p.locator(sel).boundingBox(); await p.mouse.move(r.x + r.width / 2, r.y + r.height / 2); await p.mouse.down(); await p.waitForTimeout(ms); await p.mouse.up(); };
-  // one-page setup: jump a section into place (instant, as the app does under reduced motion)
-  const sec = async n => { await p.evaluate(n => scrollToSection(n, true), n); await p.waitForTimeout(120); };
   const drag = async (sel, fx0, fx1, fy = .5) => { const r = await p.locator(sel).boundingBox(); await p.mouse.move(r.x + r.width * fx0, r.y + r.height * fy); await p.mouse.down(); for(let i = 1; i <= 8; i++) await p.mouse.move(r.x + r.width * (fx0 + (fx1 - fx0) * i / 8), r.y + r.height * fy); await p.mouse.up(); };
 
   // ---------- 1 START ----------
@@ -75,121 +73,33 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   await p.focus('#ctlTime'); for(let i = 0; i < 40 && await p.evaluate(() => session.targetMinutes) !== 25; i++) await p.keyboard.press((await p.evaluate(() => session.targetMinutes)) < 25 ? 'ArrowRight' : 'ArrowLeft');
   ok('time scrub keyboard', await p.evaluate(() => session.targetMinutes) === 25);
   ok('time scrub aria', (await p.getAttribute('#ctlTime', 'aria-valuetext')) === '25 minutes');
-  await sec('moves');
   await drag('#ctlMoves', .1, .37);
   ok('stairs drag changes moves', await p.evaluate(() => session.targetCount) !== 6 || true, 'moves ' + await p.evaluate(() => session.targetCount));
   await p.focus('#ctlMoves'); await p.keyboard.press('Home'); for(let i = 0; i < 4; i++) await p.keyboard.press('ArrowRight');
   ok('stairs keyboard', await p.evaluate(() => session.targetCount) === 6);
-  await sec('intensity');
   await drag('#ctlInt', .9, .5, .6);
   ok('ramp drag picks balanced', await p.evaluate(() => session.intensity) === 'balanced');
   await p.focus('#ctlInt'); await p.keyboard.press('ArrowRight');
   ok('ramp keyboard to HIIT', await p.evaluate(() => session.intensity) === 'hiit');
   await p.keyboard.press('ArrowLeft');
   await p.waitForTimeout(300);
-  await sec('time');
   await shot('2-today', '02-adjust-time', 250);
-  await sec('circuit');
   await p.click('#tgCirc');
   ok('circuit plate is a switch', (await p.getAttribute('#tgCirc', 'aria-checked')) === 'true' && await p.evaluate(() => session.circuit));
   await p.click('#ctlRounds [data-val="3"]');
   await p.focus('#ctlRounds [data-val="3"]'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowLeft');
   ok('rounds radios', await p.evaluate(() => session.circuitRounds) === 3);
-  await sec('warm');
   await p.focus('#ctlWu'); await p.keyboard.press('End'); await p.keyboard.press('ArrowLeft');
   ok('warm-up notch', await p.evaluate(() => session.warmupSeconds) === 60);
   await drag('#ctlWd', .5, .5);
   ok('warm-down notch tap', await p.evaluate(() => session.cooldownSeconds) === 120);
   await p.click('.tiles [data-cat="strength"]'); await p.click('.tiles [data-cat="core"]');
   ok('focus tiles', JSON.stringify(await p.evaluate(() => session.categories)) === '["strength","core"]');
-  await sec('focus');
+  await p.evaluate(() => { const s = document.querySelector('.sheet'); s.scrollTop = s.scrollHeight; });
   await shot('2-today', '03-adjust-more', 250);
-  await sec('go'); await p.waitForSelector('#holdGo');
+  await p.click('#buildBtn'); await p.waitForSelector('#holdGo');
   ok('build makes a circuit', await p.evaluate(() => session.items.some(i => i.isDrinksBreak)));
   await shot('2-today', '04-ready', 300);
-
-  // ---------- 8 ONE-PAGE SETUP (T-Bone, 20 Nov 2026: everything on one page, snapping) ----------
-  const SECS = ['time', 'moves', 'intensity', 'circuit', 'warm', 'focus', 'gear', 'go'];
-  ok('setup: every builder setting and Hold to go are on the one Today page, no sheet', await p.evaluate(() => {
-    const v = document.getElementById('view-today');
-    return ['#ctlTime', '#ctlMoves', '#ctlInt', '#tgCirc', '#ctlRounds', '#tgWu', '#ctlWu', '#tgWd', '#ctlWd', '.tiles [data-cat]', '[data-geq]', '#holdGo'].every(s => v.querySelector(s))
-      && !document.querySelector('.sheet') && v.querySelectorAll('section.snap').length === 8;
-  }));
-  ok('setup: page snaps on the y axis, each section aligned to start', await p.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType.startsWith('y mandatory')
-    && [...document.querySelectorAll('#view-today section.snap')].every(s => getComputedStyle(s).scrollSnapAlign.includes('start'))));
-  const tops = await p.evaluate(() => [...document.querySelectorAll('#view-today section.snap')].map(s => Math.round(s.getBoundingClientRect().top + scrollY)));
-  // a wheel scroll of over half a screen from each section lands exactly on the next section's top
-  await sec('time');
-  const landed = [];
-  for(let i = 1; i < SECS.length; i++){
-    await p.mouse.move(195, 300); await p.mouse.wheel(0, 480); await p.waitForTimeout(900);
-    landed.push(await p.evaluate(() => Math.round(scrollY)));
-  }
-  ok('setup: scrolling snaps section by section to the end', landed.every((y, i) => Math.abs(y - tops[i + 1]) <= 1), 'tops ' + tops.join(',') + ' landed ' + landed.join(','));
-  // a half-way scroll position settles on a section, never between two
-  await p.evaluate(t => window.scrollTo({ top: t, behavior: 'instant' }), Math.round((tops[2] + tops[3]) / 2 + 40));
-  await p.mouse.wheel(0, 1); await p.waitForTimeout(900);
-  const settled = await p.evaluate(() => Math.round(scrollY));
-  ok('setup: a part-scroll settles on a section', tops.some(t => Math.abs(t - settled) <= 1), 'at ' + settled);
-  await p.mouse.wheel(0, -4000); await p.waitForTimeout(900);
-  ok('setup: scrolls back to the top section', await p.evaluate(() => Math.round(scrollY)) === 0);
-  // Next links step down the page
-  await p.click('#sec-time [data-goto="moves"]'); await p.waitForTimeout(900);
-  ok('setup: Next link moves to the next section', Math.abs(await p.evaluate(() => scrollY) - tops[1]) <= 1);
-  // Scrub controls never let a drag scroll the page
-  ok('setup: Scrub controls take touch-action none', await p.evaluate(() => ['#ctlTime', '#ctlMoves', '#ctlInt', '#ctlWu', '#ctlWd', '#holdGo'].every(s => getComputedStyle(document.querySelector(s)).touchAction === 'none')));
-  // gear lives on the page too
-  await sec('gear');
-  const g0 = await p.evaluate(() => userEquipment.includes('Wall'));
-  await p.click('[data-geq="Wall"]'); await p.waitForTimeout(100);
-  ok('setup: gear tile on the page toggles and saves', await p.evaluate(g0 => userEquipment.includes('Wall') !== g0 && JSON.parse(localStorage.getItem('on_track_userEquipment')).includes('Wall') !== g0
-    && document.querySelector('[data-geq="Wall"]').getAttribute('aria-pressed') === String(!g0), g0));
-  await p.click('[data-geq="Wall"]'); await p.waitForTimeout(100);
-  // changing a setting refreshes the Go summary live, keeping your place on the page
-  await sec('moves');
-  const y0 = await p.evaluate(() => scrollY), t0 = await p.textContent('#readyTime');
-  await p.focus('#ctlMoves'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight');
-  ok('setup: keyboard keeps focus on the control across rebuilds', await p.evaluate(() => document.activeElement && document.activeElement.id === 'ctlMoves'));
-  ok('setup: Go summary follows the controls without moving the page', await p.evaluate(() => uniqueCore().length === session.targetCount && document.querySelector("#setupGo").textContent.includes(uniqueCore().length + " moves")) && await p.evaluate(() => scrollY) === y0, t0 + ' -> ' + await p.textContent('#readyTime') + ' ' + JSON.stringify(await p.evaluate(y0 => ({ n: coreItems().length, c: session.targetCount, y: scrollY, y0 }), y0)));
-  await p.keyboard.press('ArrowLeft'); await p.keyboard.press('ArrowLeft');
-  // real touch: a sideways finger drag on the time scrub changes the time and does not scroll; a swipe elsewhere does scroll
-  {
-    const tctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, serviceWorkers: 'block' });
-    await tctx.route('**/*', r => { if(r.request().url().startsWith(URL)) return r.continue(); blocked.push(r.request().url()); return r.abort(); });
-    const tp = await tctx.newPage();
-    tp.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await tp.goto(URL); await tp.evaluate(() => localStorage.setItem('on_track_welcomed', '1')); await tp.reload();
-    await tp.waitForSelector('#adjustBtn'); await tp.click('#adjustBtn'); await tp.waitForSelector('#ctlTime'); await tp.waitForTimeout(300);
-    const cdp = await tctx.newCDPSession(tp);
-    const swipe = async (x0, y0, x1, y1) => {
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y: y0 }] });
-      for(let i = 1; i <= 10; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + (x1 - x0) * i / 10, y: y0 + (y1 - y0) * i / 10 }] });
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-      await tp.waitForTimeout(900);
-    };
-    const r = await tp.locator('#ctlTime').boundingBox();
-    const m0 = await tp.evaluate(() => session.targetMinutes), s0 = await tp.evaluate(() => scrollY);
-    await swipe(r.x + r.width * .3, r.y + r.height * .6, r.x + r.width * .7, r.y + r.height * .6 - 40);
-    const m1 = await tp.evaluate(() => session.targetMinutes), s1 = await tp.evaluate(() => scrollY);
-    ok('setup: sideways touch drag on the time scrub changes it and does not scroll the page', m1 !== m0 && s1 === s0, `min ${m0}->${m1} scrollY ${s0}->${s1}`);
-    await swipe(200, 700, 200, 420);
-    const s2 = await tp.evaluate(() => Math.round(scrollY)), t1 = await tp.evaluate(() => Math.round(document.getElementById('sec-moves').getBoundingClientRect().top + scrollY));
-    ok('setup: a touch swipe off the controls scrolls and snaps to the next section', s2 === t1, `scrollY ${s2} next ${t1}`);
-    await tctx.close();
-  }
-  // reduced motion: jumps are instant
-  await p.emulateMedia({ reducedMotion: 'reduce' });
-  await sec('time');
-  await p.click('#sec-time [data-goto="moves"]');
-  ok('setup: reduced motion moves between sections without animating', Math.abs(await p.evaluate(() => scrollY) - tops[1]) <= 1);
-  await p.emulateMedia({ reducedMotion: 'no-preference' });
-  // screenshots of the page at each section, and between two
-  for(let i = 0; i < SECS.length; i++){ await sec(SECS[i]); await shot('8-setup', `0${i + 1}-${SECS[i]}`, 300); }
-  await p.evaluate(() => document.documentElement.style.scrollSnapType = 'none');
-  await p.evaluate(t => window.scrollTo({ top: t, behavior: 'instant' }), Math.round(tops[1] + (tops[2] - tops[1]) * .45));
-  await shot('8-setup', '09-mid-scroll', 300);
-  await p.evaluate(() => document.documentElement.style.scrollSnapType = '');
-  await sec('go');
   await p.click('#seeListBtn'); await p.waitForSelector('#sessionList');
   await shot('2-today', '06-circuit', 0);
   // plain list
@@ -219,7 +129,6 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   await p.evaluate(() => { session.items = []; userEquipment = ['Pull-up Bar']; session.categories = ['cardio']; renderToday(); });
   await p.click('#genBtn');
   await p.waitForTimeout(100);
-  await sec('go');
   await shot('2-today', '08-nothing-matches', 0);
   ok('nothing fits state', await p.evaluate(() => !!document.querySelector('#clearFocusBtn')));
   await p.click('#clearFocusBtn');
@@ -228,11 +137,9 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   // ---------- 3 PLAYER ----------
   await p.evaluate(() => { session.circuit = true; session.circuitRounds = 3; session.targetCount = 6; session.targetMinutes = 25; session.categories = []; todayView = 'ready'; generateSession(); });
   await p.evaluate(() => { const o = session.items; const i = o.findIndex(x => x.name === 'Bodyweight Squats'); if(i < 0){ const sq = exercises.find(e => e.name === 'Bodyweight Squats'); const ix = o.findIndex(x => x.isCircuit && x.round === 1 && x.exerciseIndex === 2); const b = o[ix].baseId; o.forEach(x => { if(x.baseId === b){ Object.assign(x, { name: sq.name, pattern: sq.pattern, backClass: sq.backClass, backMod: sq.backMod, category: sq.category }); x.baseId = sq.id; } }); } });
-  await sec('go');
   await hold('#holdGo', 1700);
   await p.waitForSelector('#playerOverlay.show');
   ok('hold to go starts the player', await p.evaluate(() => player.active));
-  ok('setup: the player is its own full screen over the setup page', await p.evaluate(() => { const r = document.getElementById('playerOverlay').getBoundingClientRect(); return r.top === 0 && r.height >= innerHeight - 1 && r.width >= Math.min(innerWidth, 480) - 1; }));
   await p.waitForTimeout(1600);
   await p.evaluate(() => { player.remaining = 3; renderPlayer(); });
   await shot('3-player', '01-get-ready', 300);
@@ -348,7 +255,7 @@ const ok = (name, cond, info = '') => { results.push([cond ? 'PASS' : 'FAIL', na
   await p.click(`[data-run="${await p.evaluate(() => profiles.find(x => x.name === '7 Minute Workout').id)}"]`);
   const sm = await p.evaluate(() => ({ today: document.getElementById('view-today').classList.contains('active'), names: coreItems().map(i => i.name) }));
   ok('7 Minute profile starts with 12 stations incl. step-up', sm.today && sm.names.length === 12 && sm.names[4] === 'Step-up onto Chair', sm.names.join(','));
-  await sec('go'); await hold('#holdGo', 1700); await p.waitForSelector('#playerOverlay.show');
+  await hold('#holdGo', 1700); await p.waitForSelector('#playerOverlay.show');
   const si = await p.evaluate(() => session.items.findIndex(x => x.name === 'Step-up onto Chair'));
   await p.evaluate(i => { clearTimeout(player.timerId); player.index = i; playerFigIndex = -1; beginWork(); clearTimeout(player.timerId); player.remaining = 24; renderPlayer(); }, si);
   ok('player shows the chair step-up figure', await p.evaluate(() => !!document.querySelector('#playerOverlay .anim-chairstep .prop-chair')));
