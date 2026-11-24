@@ -3,16 +3,65 @@ let history = [];
 let profiles = [];
 let userEquipment = [];
 const EQUIPMENT_ICONS = {
-  "Bodyweight": { icon: "🤸", sub: "Body weight" },
-  "Dumbbells": { icon: "🏋️", sub: "Free weights" },
-  "Kettlebell": { icon: "🫖", sub: "Cast iron" },
-  "Resistance Band": { icon: "➰", sub: "Tension bands" },
-  "Chair/Bench": { icon: "🛋️", sub: "Elevated seat" },
-  "Wall": { icon: "🧱", sub: "Vertical plane" },
-  "Jump rope": { icon: "🪢", sub: "Speed rope" },
-  "Stairs": { icon: "🪜", sub: "Step incline" },
-  "Pull-up Bar": { icon: "🧗", sub: "Bar rig" }
+  "Bodyweight": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.2"/><path d="M12 7v6.5M8 9.5l4 2 4-2M9 20.5l3-7 3 7"/></svg>`,
+    sub: "Calisthenics"
+  },
+  "Dumbbells": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M3 7.5v9M9 7.5v9M6 12h12M18 5v14M15 7.5v9M21 7.5v9"/></svg>`,
+    sub: "Free weights"
+  },
+  "Kettlebell": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8a4 4 0 0 1 8 0M7 8h10a5 5 0 0 1 5 5c0 4-3 7-7 7H9c-4 0-7-3-7-7a5 5 0 0 1 5-5z"/></svg>`,
+    sub: "Cast iron"
+  },
+  "Resistance Band": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9" ry="4.5" transform="rotate(-25 12 12)"/><ellipse cx="12" cy="12" rx="6" ry="2.5" transform="rotate(-25 12 12)"/></svg>`,
+    sub: "Tension bands"
+  },
+  "Chair/Bench": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="3" rx="1.5"/><line x1="6" y1="13" x2="4" y2="20"/><line x1="18" y1="13" x2="20" y2="20"/><line x1="5" y1="16.5" x2="19" y2="16.5"/></svg>`,
+    sub: "Flat bench"
+  },
+  "Wall": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="12" y1="3.5" x2="12" y2="9"/><line x1="8" y1="9" x2="8" y2="15"/><line x1="16" y1="9" x2="16" y2="15"/><line x1="12" y1="15" x2="12" y2="20.5"/></svg>`,
+    sub: "Vertical plane"
+  },
+  "Jump rope": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="3" height="7" rx="1"/><rect x="17" y="3.5" width="3" height="7" rx="1"/><path d="M5.5 10.5c0 7.5 13 7.5 13 0"/></svg>`,
+    sub: "Speed rope"
+  },
+  "Stairs": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h4.5v-4h4.5v-4H17.5V7H21"/></svg>`,
+    sub: "Step incline"
+  },
+  "Pull-up Bar": {
+    svg: `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="6" x2="22" y2="6"/><line x1="6" y1="6" x2="6" y2="16"/><line x1="18" y1="6" x2="18" y2="16"/><circle cx="6" cy="18" r="1.5"/><circle cx="18" cy="18" r="1.5"/></svg>`,
+    sub: "Bar rig"
+  }
 };
+const FOCUS_OPTIONS = [
+  { 
+    key: "strength", 
+    label: "Strength", 
+    svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M2 7v10M10 7v10M6 12h12M18 4v16M14 7v10M22 7v10"/></svg>` 
+  },
+  { 
+    key: "cardio", 
+    label: "Cardio", 
+    svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/><path d="M8 12h2.5l1.5 -3l2 6l1.5 -3h2"/></svg>` 
+  },
+  { 
+    key: "core", 
+    label: "Core", 
+    svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z"/><path d="M12 7.5v9M8.5 11h7M9.5 14.5h5"/></svg>` 
+  },
+  { 
+    key: "mobility", 
+    label: "Mobility", 
+    svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c3-4 6-4 9 0s6 4 9 0M2 7c3-3 6-3 9 0s6 3 9 0M2 17c3-3 6-3 9 0s6 3 9 0"/></svg>` 
+  }
+];
 let session = { 
   targetMinutes: 20, 
   targetCount: 6, 
@@ -23,7 +72,7 @@ let session = {
   warmupSeconds: 60,
   cooldown: true,
   cooldownSeconds: 120,
-  categories: [], 
+  categories: ["strength", "cardio", "core", "mobility"], 
   items: [] 
 };
 let libraryTab = 'all'; // 'all' or 'back'
@@ -646,417 +695,353 @@ async function saveProfileForm(){
 /* ---------------- Render: Today ---------------- */
 function renderToday(){
   const root = document.getElementById('view-today');
-  const segCount = 20;
-  let segsHtml = '', captionText = '';
+  if(!root) return;
 
   const coreCount = session.items.filter(i => !i.isWarmup && !i.isCooldown && !i.isDrinksBreak).length;
   const totalDuration = session.items.reduce((s,e) => s + e.duration, 0);
-  const target = session.targetMinutes;
-  const filledSegs = Math.round((totalDuration / Math.max(target,1)) * segCount);
 
-  for(let i=0; i<segCount; i++){
-    let cls = 'meter-seg';
-    if(i < filledSegs){
-      if(totalDuration > target) cls += ' fill-over';
-      else if(i > segCount*0.75) cls += ' fill-teal';
-      else cls += ' fill-amber';
-    }
-    segsHtml += `<div class="${cls}"></div>`;
-  }
-  captionText = `${Math.round(totalDuration)} / ${target} MIN · ${coreCount} MOVES`;
+  const intensityVal = session.intensity === 'steady' ? 1 : session.intensity === 'hiit' ? 3 : 2;
 
   root.innerHTML = `
-    <!-- Panel 1: My Equipment (Tactile Illustrated Gear Cards) -->
-    <div class="panel gear-panel">
-      <div class="panel-header-row">
-        <div class="eyebrow" style="margin:0;">My Equipment</div>
-        <span class="gear-count-pill" id="gearCountPill">${userEquipment.length} Selected</span>
+    <!-- 1. Equipment Selection at the Top -->
+    <div class="section-title">Equipment Available</div>
+    <div class="equipment-grid" id="gearGrid">
+      ${EQUIPMENT_OPTIONS.map(eq => {
+        const isSelected = userEquipment.includes(eq);
+        const meta = EQUIPMENT_ICONS[eq] || { svg: "", sub: "" };
+        return `
+          <button type="button" class="equipment-tile ${isSelected ? 'active' : ''}" data-geq="${escapeAttr(eq)}">
+            <span class="tile-dot"></span>
+            <div class="tile-icon-svg">${meta.svg}</div>
+            <span class="tile-label">${escapeHtml(eq)}</span>
+          </button>
+        `;
+      }).join('')}
+    </div>
+
+    <!-- 7. Focus Area: Prominent 4-Tile Selection -->
+    <div class="section-title">Focus Area</div>
+    <div class="focus-grid" id="focusGrid">
+      ${FOCUS_OPTIONS.map(f => {
+        const isActive = session.categories.includes(f.key);
+        return `
+          <button type="button" class="focus-card ${isActive ? 'active' : ''}" data-cat="${f.key}">
+            <div class="focus-icon-wrap">${f.svg}</div>
+            <div class="focus-name">${f.label}</div>
+            <div class="focus-check">✓</div>
+          </button>
+        `;
+      }).join('')}
+    </div>
+
+    <!-- 3 & 4. Main Adjusters: Time & Exercises Sliders -->
+    <div class="section-title">Workout Adjusters</div>
+    <div class="slider-metric-card">
+      <div class="slider-metric-header">
+        <span class="slider-metric-label">Total Time</span>
+        <span class="slider-metric-value"><span id="timeValDisplay">${session.targetMinutes}</span><small>min</small></span>
       </div>
-      <div class="gear-grid" id="gearGrid">
-        ${EQUIPMENT_OPTIONS.map(eq => {
-          const isSelected = userEquipment.includes(eq);
-          const meta = EQUIPMENT_ICONS[eq] || { icon: "⚡", sub: "Equipment" };
-          return `
-            <div class="gear-card ${isSelected ? 'active' : ''}" data-geq="${escapeAttr(eq)}">
-              <span class="gear-check">✓</span>
-              <span class="gear-icon">${meta.icon}</span>
-              <span class="gear-name">${eq}</span>
-              <span class="gear-sub">${meta.sub}</span>
-            </div>
-          `;
-        }).join('')}
+      <div class="slider-stepper-row">
+        <button type="button" class="stepper-btn" id="timeDecBtn" aria-label="Decrease time">−</button>
+        <input type="range" min="5" max="60" step="1" value="${session.targetMinutes}" id="timeSlider" class="studio-slider">
+        <button type="button" class="stepper-btn" id="timeIncBtn" aria-label="Increase time">+</button>
       </div>
     </div>
 
-    <!-- Panel 2: Warm-Up & Warm-Down (Sleek Glass Panel) -->
-    <div class="glass-panel">
-      <div class="eyebrow" style="margin-bottom:12px;">Warm-Up &amp; Warm-Down</div>
-      
-      <div class="toggle-row">
-        <label class="toggle-label">
+    <div class="slider-metric-card">
+      <div class="slider-metric-header">
+        <span class="slider-metric-label">Exercises</span>
+        <span class="slider-metric-value"><span id="countValDisplay">${session.targetCount}</span><small>moves</small></span>
+      </div>
+      <div class="slider-stepper-row">
+        <button type="button" class="stepper-btn" id="countDecBtn" aria-label="Decrease exercises">−</button>
+        <input type="range" min="2" max="15" step="1" value="${session.targetCount}" id="countSlider" class="studio-slider">
+        <button type="button" class="stepper-btn" id="countIncBtn" aria-label="Increase exercises">+</button>
+      </div>
+    </div>
+
+    <!-- 5. Workout Intensity: 3 Clean Interactive Stops (No Slider) -->
+    <div class="intensity-card">
+      <div class="intensity-header">
+        <span class="intensity-label">Intensity</span>
+        <span class="intensity-tag" id="intensityLabel">${session.intensity.toUpperCase()}</span>
+      </div>
+      <div class="intensity-stops" id="intensityStops">
+        <button type="button" class="intensity-stop-btn ${session.intensity==='steady'?'active':''}" data-intensity="steady">
+          <div class="stop-name">Steady</div>
+          <div class="stop-rest">Longer Rest</div>
+        </button>
+        <button type="button" class="intensity-stop-btn ${session.intensity==='balanced'?'active':''}" data-intensity="balanced">
+          <div class="stop-name">Balanced</div>
+          <div class="stop-rest">Moderate Pace</div>
+        </button>
+        <button type="button" class="intensity-stop-btn ${session.intensity==='hiit'?'active':''}" data-intensity="hiit">
+          <div class="stop-name">HIIT</div>
+          <div class="stop-rest">Max Burn</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 6 & 2. Circuit Mode & Discreet Warm-Up / Cool-Down -->
+    <div class="options-row-card">
+      <div class="circuit-toggle-wrap">
+        <span class="circuit-label">Circuit Mode</span>
+        <label class="circuit-switch">
+          <input type="checkbox" id="circuitToggle" ${session.circuit ? 'checked' : ''}>
+          <span class="circuit-slider-ui"></span>
+        </label>
+      </div>
+      <div class="circuit-rounds-selector" id="circuitRoundsChips" style="${session.circuit ? '' : 'display:none;'}">
+        ${[2, 3, 4, 5].map(r => `<button type="button" class="round-chip ${session.circuitRounds===r?'active':''}" data-crounds="${r}">${r} Rounds</button>`).join('')}
+      </div>
+      <div class="warmup-discreet-row">
+        <label class="discreet-check-label">
           <input type="checkbox" id="warmupToggle" ${session.warmup ? 'checked' : ''}>
-          <span>Warm-Up (Jumping Jacks)</span>
+          <span>Warm-Up</span>
         </label>
-        <div class="chip-grid" id="warmupTimeChips" style="margin:0;">
-          ${[30, 45, 60, 90].map(s=>`<div class="chip sm ${session.warmupSeconds===s?'on':''}" data-wtime="${s}">${s}s</div>`).join('')}
-        </div>
-      </div>
-
-      <div class="toggle-row" style="border-top:1px solid rgba(255,255,255,0.08); margin-top:12px; padding-top:12px;">
-        <label class="toggle-label">
+        <label class="discreet-check-label">
           <input type="checkbox" id="cooldownToggle" ${session.cooldown ? 'checked' : ''}>
-          <span>Warm-Down (Yoga Stretch)</span>
+          <span>Warm-Down</span>
         </label>
-        <div class="chip-grid" id="cooldownTimeChips" style="margin:0;">
-          ${[60, 120, 180].map(s=>`<div class="chip sm ${session.cooldownSeconds===s?'on':''}" data-cdtime="${s}">${Math.round(s/60)}m</div>`).join('')}
-        </div>
       </div>
     </div>
 
-    <!-- Panel 3: Build Workout (Clearly Separated Sliders + Intensity + Circuit) -->
-    <div class="panel">
-      <div class="eyebrow" style="margin-bottom:14px;">Build Workout</div>
-
-      <!-- Variable 1: Distinct Hero Card for Total Time -->
-      <div class="hero-slider-card time-card">
-        <div class="hero-card-top">
-          <span class="hero-card-tag">⏱ Total Time</span>
-          <span class="hero-card-tag" style="color:var(--accent);">Target Duration</span>
-        </div>
-        <div class="hero-display-wrap">
-          <span class="hero-display-num" id="timeValDisplay">${session.targetMinutes}</span>
-          <span class="hero-display-unit">MINUTES</span>
-        </div>
-        <div class="slider-track-wrap">
-          <button class="nudge-btn" id="timeDecBtn" aria-label="Decrease time">&#8722;</button>
-          <input type="range" min="5" max="60" step="1" value="${session.targetMinutes}" id="timeSlider" class="custom-range">
-          <button class="nudge-btn" id="timeIncBtn" aria-label="Increase time">&#43;</button>
-        </div>
-        <div class="tick-row">
-          <span>5 min</span>
-          <span>20 min</span>
-          <span>40 min</span>
-          <span>60 min</span>
-        </div>
-      </div>
-
-      <!-- Variable 2: Distinct Hero Card for Exercises -->
-      <div class="hero-slider-card moves-card">
-        <div class="hero-card-top">
-          <span class="hero-card-tag">🎯 Number of Exercises</span>
-          <span class="hero-card-tag" style="color:var(--meter);">Total Moves</span>
-        </div>
-        <div class="hero-display-wrap">
-          <span class="hero-display-num" id="countValDisplay">${session.targetCount}</span>
-          <span class="hero-display-unit">EXERCISES</span>
-        </div>
-        <div class="slider-track-wrap">
-          <button class="nudge-btn" id="countDecBtn" aria-label="Decrease exercises">&#8722;</button>
-          <input type="range" min="2" max="15" step="1" value="${session.targetCount}" id="countSlider" class="custom-range">
-          <button class="nudge-btn" id="countIncBtn" aria-label="Increase exercises">&#43;</button>
-        </div>
-        <div class="tick-row">
-          <span>2 moves</span>
-          <span>6 moves</span>
-          <span>10 moves</span>
-          <span>15 moves</span>
-        </div>
-      </div>
-
-      <!-- 3 Workout Intensity Options -->
-      <div class="intensity-wrap">
-        <div class="slider-header" style="margin-bottom:8px;">
-          <span class="slider-label" style="font-size:18px;">Workout Intensity</span>
-          <span class="intensity-status-badge ${session.intensity}">
-            ${session.intensity === 'steady' ? '🟢 Steady' : session.intensity === 'hiit' ? '🔴 High / HIIT' : '🟡 Balanced'}
-          </span>
-        </div>
-        <div class="intensity-selector">
-          <div class="intensity-btn ${session.intensity==='steady'?'active':''}" data-intensity="steady">
-            <span class="i-dot steady"></span>
-            <span class="i-title">Steady</span>
-            <span class="i-sub">Longer Rest</span>
-          </div>
-          <div class="intensity-btn ${session.intensity==='balanced'?'active':''}" data-intensity="balanced">
-            <span class="i-dot balanced"></span>
-            <span class="i-title">Balanced</span>
-            <span class="i-sub">Moderate Pace</span>
-          </div>
-          <div class="intensity-btn ${session.intensity==='hiit'?'active':''}" data-intensity="hiit">
-            <span class="i-dot hiit"></span>
-            <span class="i-title">HIIT</span>
-            <span class="i-sub">Max Burn</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Circuit Option -->
-      <div style="margin-top:20px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
-        <div class="toggle-row">
-          <label class="toggle-label">
-            <input type="checkbox" id="circuitToggle" ${session.circuit ? 'checked' : ''}>
-            <span style="font-weight:600; font-size:16px;">Circuit Mode</span>
-          </label>
-          <div class="chip-grid" id="circuitRoundsChips" style="margin:0; ${session.circuit ? '' : 'display:none;'}">
-            ${[2, 3, 4, 5].map(r => `<div class="chip sm ${session.circuitRounds===r?'on':''}" data-crounds="${r}">${r} Rounds</div>`).join('')}
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Formula Pill -->
-      <div class="calc-preview-pill" id="calcPreviewPill">
-        ${getWorkoutFormula(session.targetMinutes, session.targetCount, session.circuit, session.circuitRounds, session.intensity, session.warmup, session.warmupSeconds, session.cooldown, session.cooldownSeconds)}
-      </div>
-
-      <!-- Optional Focus Filters -->
-      <div class="eyebrow" style="margin-top:22px;">Focus (Optional Filter)</div>
-      <div class="chip-grid" id="focusChips" style="margin-top:8px;">
-        ${CATEGORIES.filter(c=>c!=='yoga').map(c=>`<div class="chip ${session.categories.includes(c)?'on':''}" data-cat="${c}">${CAT_LABEL[c]}</div>`).join('')}
-      </div>
-
-      <button class="btn btn-primary" id="genBtn" style="margin-top:18px;">Generate Workout</button>
+    <!-- 8. Single Elegant Summary Bar + Generate Workout Button -->
+    <div class="summary-bar" id="summaryBar">
+      <span id="sumTime">${session.targetMinutes} MIN</span>
+      <span class="summary-dot"></span>
+      <span id="sumMoves">${session.circuit ? `${session.circuitRounds} ROUNDS` : `${session.targetCount} MOVES`}</span>
+      <span class="summary-dot"></span>
+      <span id="sumIntensity">${session.intensity.toUpperCase()}</span>
+    </div>
+    <button type="button" class="btn-black-pill" id="genBtn">Generate Workout</button>
+    <div style="text-align:center; margin:8px 0 4px;">
+      <button type="button" class="btn-link-builder" id="openBuilderLink">Or build custom routine &rarr;</button>
     </div>
 
-    <!-- Active Session List / Empty State -->
+    <!-- 9 & 10. Generated Workout (Ultra-Clean Minimalist List) -->
     ${session.items.length > 0 ? `
-    <div class="panel">
-      <div class="meter-caption"><span>SESSION LOAD</span><span>${captionText}</span></div>
-      <div class="meter">${segsHtml}</div>
-    </div>
-    <div id="sessionList"></div>
-    <button class="btn btn-ghost" id="addRandomBtn">&#43; Add exercise</button>
-    <button class="btn btn-primary" id="startWorkoutBtn">&#9654; Start workout</button>
-    <button class="btn btn-ghost" id="finishBtn">Finish &amp; log session</button>
-    <button class="btn btn-ghost" id="saveProfileBtn">Save as profile</button>
+      <div class="session-summary-card">
+        <div class="session-summary-title">Today's Workout</div>
+        <div class="session-summary-meta">${Math.round(totalDuration)} MIN · ${coreCount} MOVES</div>
+      </div>
+      <div id="sessionList"></div>
+      <button type="button" class="btn-black-pill" id="startWorkoutBtn" style="margin-top:14px;">Start Workout</button>
+      <button type="button" class="btn-ghost-pill" id="addRandomBtn">+ Add Exercise</button>
+      <button type="button" class="btn-ghost-pill" id="finishBtn">Finish &amp; Log Session</button>
+      <button type="button" class="btn-ghost-pill" id="saveProfileBtn">Save As Profile</button>
     ` : `
-    <div class="empty">
-      <div class="glyph">&#9673;</div>
-      <p>No workout generated yet.<br>Set your time, exercises, and intensity above,<br>then tap Generate Workout.</p>
-    </div>
+      <div style="text-align:center; padding:32px 16px; color:var(--ink-secondary); font-size:14px; font-weight:500;">
+        Set your workout parameters above and tap Generate Workout.
+      </div>
     `}
   `;
 
-  // Render Session Items (grouped by Round if Circuit + Drinks Breaks)
+  // Render Workout List Items (Minimalist: Stick Figure + Name + Swap + Check)
   if(session.items.length > 0){
     const list = document.getElementById('sessionList');
-    let currentRenderRound = 0;
-    list.innerHTML = session.items.map((e, i) => {
-      let roundBanner = '';
-      if(e.isCircuit && e.round !== currentRenderRound && !e.isDrinksBreak){
-        currentRenderRound = e.round;
-        roundBanner = `<div class="circuit-round-banner">ROUND ${e.round} OF ${e.totalRounds}</div>`;
-      }
+    if(list){
+      let currentRenderRound = 0;
+      list.innerHTML = session.items.map((e, i) => {
+        let roundBanner = '';
+        if(e.isCircuit && e.round !== currentRenderRound && !e.isDrinksBreak){
+          currentRenderRound = e.round;
+          roundBanner = `<div class="circuit-round-badge">ROUND ${e.round} OF ${e.totalRounds}</div>`;
+        }
 
-      // Special Drinks Break Card
-      if(e.isDrinksBreak){
-        return `
-          <div class="drinks-break-card">
-            <div class="drinks-icon">💧</div>
-            <div class="drinks-body">
-              <div class="drinks-title">Drinks Break · ${e.workSeconds}s</div>
-              <div class="drinks-sub">Catch your breath &amp; hydrate before Round ${e.nextRound}</div>
+        if(e.isDrinksBreak){
+          return `
+            <div class="drinks-break-row">
+              <span class="drinks-break-icon">💧</span>
+              <div class="drinks-break-text">Drinks Break · ${e.workSeconds}s</div>
+              <div class="check-circle-clean ${e.done ? 'done' : ''}" data-toggle="${i}" style="margin-left:auto;">✓</div>
             </div>
-            <div class="ex-check ${e.done?'done':''}" data-toggle="${i}">${e.done?'&#10003;':''}</div>
+          `;
+        }
+
+        return roundBanner + `
+          <div class="ex-row-clean">
+            <div class="ex-fig-clean">${buildFigureSVG(patternForExercise(e), 'small mini')}</div>
+            <div class="ex-name-clean ${e.done ? 'done' : ''}">${escapeHtml(e.name)}</div>
+            <div class="ex-controls-clean">
+              <button type="button" class="btn-swap-clean" data-swap="${i}" title="Swap exercise">↻</button>
+              <div class="check-circle-clean ${e.done ? 'done' : ''}" data-toggle="${i}">✓</div>
+            </div>
           </div>
         `;
-      }
-
-      return roundBanner + `
-        <div class="ex-card">
-          <div class="ex-illustration">${buildFigureSVG(patternForExercise(e), 'small mini')}</div>
-          <div class="ex-check ${e.done?'done':''}" data-toggle="${i}">${e.done?'&#10003;':''}</div>
-          <div class="ex-body">
-            <div class="ex-name ${e.done?'done':''}">
-              ${escapeHtml(e.name)}
-              ${e.isWarmup ? `<span class="tag warmup" style="margin-left:6px;">WARM-UP</span>` : ''}
-              ${e.isCooldown ? `<span class="tag cooldown" style="margin-left:6px;">WARM-DOWN</span>` : ''}
-              ${e.isCircuit ? `<span class="tag circuit-tag" style="margin-left:6px;">RND ${e.round}/${e.totalRounds}</span>` : ''}
-            </div>
-            <div class="ex-meta">
-              <span class="tag">${CAT_LABEL[e.category]||'Exercise'}</span>
-              ${e.backClass && typeof BACK_CLASSES !== 'undefined' && BACK_CLASSES[e.backClass] ? `
-                <span class="tag back-badge" style="border:1px solid ${BACK_CLASSES[e.backClass].color}; color:${BACK_CLASSES[e.backClass].color};">
-                  ${BACK_CLASSES[e.backClass].badge}
-                </span>
-              ` : ''}
-              <span>${e.workSeconds}s work</span>
-              ${e.restSeconds > 0 ? `<span>${e.restSeconds}s rest</span>` : ''}
-            </div>
-          </div>
-          <div class="ex-actions">
-            <button class="icon-btn" data-swap="${i}" title="Swap">&#8635;</button>
-            <button class="icon-btn" data-remove="${i}" title="Remove">&#10005;</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+      }).join('');
+    }
   }
 
-  // Live Formula Helper
-  const updateCalcPill = () => {
-    const pill = document.getElementById('calcPreviewPill');
-    if(pill){
-      pill.textContent = getWorkoutFormula(
-        session.targetMinutes, 
-        session.targetCount, 
-        session.circuit, 
-        session.circuitRounds, 
-        session.intensity,
-        session.warmup, 
-        session.warmupSeconds, 
-        session.cooldown, 
-        session.cooldownSeconds
-      );
-    }
+  // Summary Bar live updater
+  const updateSummaryBar = () => {
+    const sumTime = document.getElementById('sumTime');
+    const sumMoves = document.getElementById('sumMoves');
+    const sumIntensity = document.getElementById('sumIntensity');
+    if(sumTime) sumTime.textContent = `${session.targetMinutes} MIN`;
+    if(sumMoves) sumMoves.textContent = session.circuit ? `${session.circuitRounds} ROUNDS` : `${session.targetCount} MOVES`;
+    if(sumIntensity) sumIntensity.textContent = session.intensity.toUpperCase();
   };
 
-  // Slider 1: Time handlers
+  // 1. Equipment Selection
+  root.querySelectorAll('#gearGrid .equipment-tile').forEach(tile => {
+    tile.addEventListener('click', async () => {
+      const eq = tile.dataset.geq;
+      const idx = userEquipment.indexOf(eq);
+      if(idx > -1) userEquipment.splice(idx, 1);
+      else userEquipment.push(eq);
+      tile.classList.toggle('active');
+      await saveUserEquipment();
+    });
+  });
+
+  // 7. Focus Area Selection
+  root.querySelectorAll('#focusGrid .focus-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const cat = card.dataset.cat;
+      const idx = session.categories.indexOf(cat);
+      if(idx > -1){
+        session.categories.splice(idx, 1);
+      } else {
+        session.categories.push(cat);
+      }
+      card.classList.toggle('active');
+    });
+  });
+
+  // 3. Time Slider & Steppers
   const timeSlider = document.getElementById('timeSlider');
   if(timeSlider){
     timeSlider.addEventListener('input', (e) => {
-      session.targetMinutes = parseInt(e.target.value);
+      session.targetMinutes = parseInt(e.target.value, 10);
       const valDisp = document.getElementById('timeValDisplay');
       if(valDisp) valDisp.textContent = session.targetMinutes;
-      updateCalcPill();
+      updateSummaryBar();
       rescaleIfNeeded();
     });
-    timeSlider.addEventListener('change', renderToday);
   }
   const timeDecBtn = document.getElementById('timeDecBtn');
   if(timeDecBtn){
     timeDecBtn.addEventListener('click', () => {
       session.targetMinutes = Math.max(5, session.targetMinutes - 1);
-      renderToday();
+      const s = document.getElementById('timeSlider');
+      if(s) s.value = session.targetMinutes;
+      const valDisp = document.getElementById('timeValDisplay');
+      if(valDisp) valDisp.textContent = session.targetMinutes;
+      updateSummaryBar();
+      rescaleIfNeeded();
     });
   }
   const timeIncBtn = document.getElementById('timeIncBtn');
   if(timeIncBtn){
     timeIncBtn.addEventListener('click', () => {
       session.targetMinutes = Math.min(60, session.targetMinutes + 1);
-      renderToday();
+      const s = document.getElementById('timeSlider');
+      if(s) s.value = session.targetMinutes;
+      const valDisp = document.getElementById('timeValDisplay');
+      if(valDisp) valDisp.textContent = session.targetMinutes;
+      updateSummaryBar();
+      rescaleIfNeeded();
     });
   }
 
-  // Slider 2: Exercises handlers
+  // 4. Exercise Count Slider & Steppers
   const countSlider = document.getElementById('countSlider');
   if(countSlider){
     countSlider.addEventListener('input', (e) => {
-      session.targetCount = parseInt(e.target.value);
+      session.targetCount = parseInt(e.target.value, 10);
       const valDisp = document.getElementById('countValDisplay');
       if(valDisp) valDisp.textContent = session.targetCount;
-      updateCalcPill();
+      updateSummaryBar();
     });
     countSlider.addEventListener('change', () => {
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
   }
   const countDecBtn = document.getElementById('countDecBtn');
   if(countDecBtn){
     countDecBtn.addEventListener('click', () => {
       session.targetCount = Math.max(2, session.targetCount - 1);
+      const s = document.getElementById('countSlider');
+      if(s) s.value = session.targetCount;
+      const valDisp = document.getElementById('countValDisplay');
+      if(valDisp) valDisp.textContent = session.targetCount;
+      updateSummaryBar();
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
   }
   const countIncBtn = document.getElementById('countIncBtn');
   if(countIncBtn){
     countIncBtn.addEventListener('click', () => {
       session.targetCount = Math.min(15, session.targetCount + 1);
+      const s = document.getElementById('countSlider');
+      if(s) s.value = session.targetCount;
+      const valDisp = document.getElementById('countValDisplay');
+      if(valDisp) valDisp.textContent = session.targetCount;
+      updateSummaryBar();
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
   }
 
-  // Intensity selection buttons
-  root.querySelectorAll('.intensity-btn').forEach(btn => {
+  // 5. Workout Intensity (3 Clean Stop Buttons)
+  root.querySelectorAll('.intensity-stop-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       session.intensity = btn.dataset.intensity;
-      updateCalcPill();
+      const label = document.getElementById('intensityLabel');
+      if(label) label.textContent = session.intensity.toUpperCase();
+      root.querySelectorAll('.intensity-stop-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.intensity === session.intensity);
+      });
+      updateSummaryBar();
       if(session.items.length > 0) rescaleIfNeeded();
-      renderToday();
     });
   });
 
-  // Circuit Mode Toggle & Rounds
+  // 6. Circuit Mode & Rounds
   const circuitToggle = document.getElementById('circuitToggle');
   if(circuitToggle){
     circuitToggle.addEventListener('change', (e) => {
       session.circuit = e.target.checked;
       const roundsWrap = document.getElementById('circuitRoundsChips');
       if(roundsWrap) roundsWrap.style.display = session.circuit ? 'flex' : 'none';
-      updateCalcPill();
+      updateSummaryBar();
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
   }
-  root.querySelectorAll('#circuitRoundsChips .chip').forEach(chip => {
+  root.querySelectorAll('#circuitRoundsChips .round-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      session.circuitRounds = parseInt(chip.dataset.crounds);
-      updateCalcPill();
+      session.circuitRounds = parseInt(chip.dataset.crounds, 10);
+      root.querySelectorAll('#circuitRoundsChips .round-chip').forEach(c => {
+        c.classList.toggle('active', c === chip);
+      });
+      updateSummaryBar();
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
   });
 
-  // Focus filters
-  root.querySelectorAll('#focusChips .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const cat = chip.dataset.cat;
-      const idx = session.categories.indexOf(cat);
-      if(idx > -1) session.categories.splice(idx,1); 
-      else session.categories.push(cat);
-      renderToday();
-    });
-  });
-
-  // Warm-Up / Warm-Down controls
+  // 2. Discreet Warm-Up / Cool-Down
   const warmupToggle = document.getElementById('warmupToggle');
-  if(warmupToggle) warmupToggle.addEventListener('change', (e) => {
-    session.warmup = e.target.checked;
-    updateCalcPill();
-    if(session.items.length > 0) generateSession();
-  });
-  root.querySelectorAll('#warmupTimeChips .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      session.warmupSeconds = parseInt(chip.dataset.wtime);
-      updateCalcPill();
+  if(warmupToggle){
+    warmupToggle.addEventListener('change', (e) => {
+      session.warmup = e.target.checked;
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
-  });
-
+  }
   const cooldownToggle = document.getElementById('cooldownToggle');
-  if(cooldownToggle) cooldownToggle.addEventListener('change', (e) => {
-    session.cooldown = e.target.checked;
-    updateCalcPill();
-    if(session.items.length > 0) generateSession();
-  });
-  root.querySelectorAll('#cooldownTimeChips .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      session.cooldownSeconds = parseInt(chip.dataset.cdtime);
-      updateCalcPill();
+  if(cooldownToggle){
+    cooldownToggle.addEventListener('change', (e) => {
+      session.cooldown = e.target.checked;
       if(session.items.length > 0) generateSession();
-      else renderToday();
     });
-  });
+  }
 
-  // Equipment selection (Tactile Gear Cards)
-  root.querySelectorAll('#gearGrid .gear-card').forEach(card => {
-    card.addEventListener('click', async () => {
-      const eq = card.dataset.geq;
-      const idx = userEquipment.indexOf(eq);
-      if(idx > -1) userEquipment.splice(idx, 1); 
-      else userEquipment.push(eq);
-      card.classList.toggle('active');
-      const countPill = document.getElementById('gearCountPill');
-      if(countPill) countPill.textContent = `${userEquipment.length} Selected`;
-      await saveUserEquipment();
-    });
-  });
+  // 8. Generate Button & Builder link
+  const genBtn = document.getElementById('genBtn');
+  if(genBtn) genBtn.addEventListener('click', generateSession);
+  const openBLink = document.getElementById('openBuilderLink');
+  if(openBLink) openBLink.addEventListener('click', openBuilder);
 
-  // Action buttons
-  document.getElementById('genBtn').addEventListener('click', generateSession);
+  // Bottom action buttons
   const finishBtn = document.getElementById('finishBtn');
   if(finishBtn) finishBtn.addEventListener('click', finishSession);
   const saveProfileBtn = document.getElementById('saveProfileBtn');
@@ -1066,9 +1051,13 @@ function renderToday(){
   const startWorkoutBtn = document.getElementById('startWorkoutBtn');
   if(startWorkoutBtn) startWorkoutBtn.addEventListener('click', startWorkout);
 
-  root.querySelectorAll('[data-toggle]').forEach(el => el.addEventListener('click', () => toggleDone(parseInt(el.dataset.toggle))));
-  root.querySelectorAll('[data-swap]').forEach(el => el.addEventListener('click', () => swapExercise(parseInt(el.dataset.swap))));
-  root.querySelectorAll('[data-remove]').forEach(el => el.addEventListener('click', () => removeSessionItem(parseInt(el.dataset.remove))));
+  // 10. List row item interactions (check & swap)
+  root.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => toggleDone(parseInt(el.dataset.toggle, 10)));
+  });
+  root.querySelectorAll('[data-swap]').forEach(el => {
+    el.addEventListener('click', () => swapExercise(parseInt(el.dataset.swap, 10)));
+  });
 }
 
 /* ---------------- Render: Library ---------------- */
@@ -1817,6 +1806,407 @@ function escapeHtml(str){
 }
 function escapeAttr(str){ return escapeHtml(str); }
 
+/* ==========================================================================
+   ROUTINE BUILDER MODE
+   ========================================================================== */
+let builderRoutine = {
+  name: '',
+  circuit: false,
+  circuitRounds: 3,
+  intensity: 'balanced',
+  activeCategory: 'all',
+  searchQuery: '',
+  items: []
+};
+
+function openBuilder(){
+  builderRoutine = {
+    name: '',
+    circuit: session.circuit || false,
+    circuitRounds: session.circuitRounds || 3,
+    intensity: session.intensity || 'balanced',
+    activeCategory: 'all',
+    searchQuery: '',
+    items: session.items.filter(i => !i.isWarmup && !i.isCooldown && !i.isDrinksBreak).map(i => ({...i}))
+  };
+  renderBuilderOverlay();
+  const overlay = document.getElementById('builderOverlay');
+  if(overlay){
+    overlay.classList.add('show');
+    overlay.scrollTop = 0;
+  }
+}
+
+function closeBuilder(){
+  const overlay = document.getElementById('builderOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
+
+function renderBuilderOverlay(){
+  const overlay = document.getElementById('builderOverlay');
+  if(!overlay) return;
+
+  const totalMoves = builderRoutine.items.length;
+  const timing = getTimingForSlot(45, builderRoutine.intensity);
+  const totalMins = builderRoutine.circuit 
+    ? Math.max(1, Math.round((totalMoves * builderRoutine.circuitRounds * (timing.work + timing.rest)) / 60))
+    : Math.max(1, Math.round((totalMoves * (timing.work + timing.rest)) / 60));
+
+  const filteredExercises = exercises.filter(e => {
+    const matchesCat = builderRoutine.activeCategory === 'all' || e.category === builderRoutine.activeCategory;
+    const matchesSearch = !builderRoutine.searchQuery || e.name.toLowerCase().includes(builderRoutine.searchQuery.toLowerCase()) || (e.equipment||[]).some(eq => eq.toLowerCase().includes(builderRoutine.searchQuery.toLowerCase()));
+    return matchesCat && matchesSearch;
+  });
+
+  overlay.innerHTML = `
+    <!-- Topbar Navigation -->
+    <div class="builder-topbar">
+      <button type="button" class="builder-back-btn" id="bCloseBtn">
+        <span>←</span> Today
+      </button>
+      <div class="builder-title">Routine Builder</div>
+      <button type="button" class="builder-clear-btn" id="bClearBtn">Clear</button>
+    </div>
+
+    <!-- Routine Config Shaded Card -->
+    <div class="builder-card">
+      <input type="text" id="bNameInput" class="builder-input" placeholder="Routine Name (e.g. Morning Full-Body)" value="${escapeAttr(builderRoutine.name)}">
+
+      <div class="circuit-toggle-wrap">
+        <span class="circuit-label">Circuit Mode</span>
+        <label class="circuit-switch">
+          <input type="checkbox" id="bCircuitToggle" ${builderRoutine.circuit ? 'checked' : ''}>
+          <span class="circuit-slider-ui"></span>
+        </label>
+      </div>
+      <div class="circuit-rounds-selector" id="bRoundsWrap" style="${builderRoutine.circuit ? '' : 'display:none;'}">
+        ${[2, 3, 4, 5].map(r => `<button type="button" class="round-chip ${builderRoutine.circuitRounds===r?'active':''}" data-bcrounds="${r}">${r} Rounds</button>`).join('')}
+      </div>
+
+      <div style="margin-top:14px; padding-top:14px; border-top:1px solid #F1F5F9;">
+        <div class="section-title" style="margin:0 0 8px;">Pace &amp; Intensity</div>
+        <div class="intensity-stops">
+          <button type="button" class="intensity-stop-btn ${builderRoutine.intensity==='steady'?'active':''}" data-bintensity="steady">
+            <div class="stop-name">Steady</div>
+            <div class="stop-rest">Longer Rest</div>
+          </button>
+          <button type="button" class="intensity-stop-btn ${builderRoutine.intensity==='balanced'?'active':''}" data-bintensity="balanced">
+            <div class="stop-name">Balanced</div>
+            <div class="stop-rest">Moderate</div>
+          </button>
+          <button type="button" class="intensity-stop-btn ${builderRoutine.intensity==='hiit'?'active':''}" data-bintensity="hiit">
+            <div class="stop-name">HIIT</div>
+            <div class="stop-rest">Max Burn</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="builder-calc-pill">
+        ${totalMoves} MOVES · ~${totalMins} MIN ${builderRoutine.circuit ? `(${builderRoutine.circuitRounds} ROUNDS)` : ''} · ${builderRoutine.intensity.toUpperCase()}
+      </div>
+    </div>
+
+    <!-- Selected Moves List -->
+    <div class="section-title">Your Selected Moves (${totalMoves})</div>
+    <div class="builder-items-list" id="bSelectedList">
+      ${totalMoves > 0 ? builderRoutine.items.map((e, idx) => `
+        <div class="builder-item-row">
+          <div class="ex-fig-clean">${buildFigureSVG(patternForExercise(e), 'small mini')}</div>
+          <div class="builder-item-name">
+            <div>${escapeHtml(e.name)}</div>
+            <div class="builder-item-sub">${CAT_LABEL[e.category]||'Move'} · ${(e.equipment||[]).join(', ')||'Bodyweight'}</div>
+          </div>
+          <div class="builder-item-actions">
+            <button type="button" class="builder-mini-btn" data-bmoveup="${idx}" title="Move up">▲</button>
+            <button type="button" class="builder-mini-btn" data-bmovedown="${idx}" title="Move down">▼</button>
+            <button type="button" class="builder-mini-btn del" data-bdel="${idx}" title="Remove">✕</button>
+          </div>
+        </div>
+      `).join('') : `
+        <div class="builder-card builder-empty-hint">
+          No exercises added yet.<br>Filter and tap <strong>+ Add</strong> below to build your custom routine.
+        </div>
+      `}
+    </div>
+
+    <!-- Bottom Action Controls -->
+    ${totalMoves > 0 ? `
+      <div style="margin: 16px 0 20px;">
+        <button type="button" class="btn-black-pill" id="bStartNowBtn">▶ Load &amp; Start Workout</button>
+        <button type="button" class="btn-ghost-pill" id="bSaveProfileBtn">Save as Profile</button>
+      </div>
+    ` : ''}
+
+    <!-- Exercise Library Picker -->
+    <div class="section-title" style="margin-top:20px;">Add From Exercise Library (${filteredExercises.length})</div>
+    <input type="text" id="bSearchInput" class="builder-search-input" placeholder="Search exercises or equipment..." value="${escapeAttr(builderRoutine.searchQuery)}">
+
+    <div class="builder-filter-chips">
+      ${['all', 'strength', 'cardio', 'core', 'mobility'].map(c => `
+        <button type="button" class="builder-filter-chip ${builderRoutine.activeCategory===c?'active':''}" data-bcat="${c}">
+          ${c === 'all' ? 'All Moves' : CAT_LABEL[c]}
+        </button>
+      `).join('')}
+    </div>
+
+    <div id="bLibraryList">
+      ${filteredExercises.map(e => `
+        <div class="builder-lib-row">
+          <div class="ex-fig-clean">${buildFigureSVG(patternForExercise(e), 'small mini')}</div>
+          <div class="builder-lib-info">
+            <div class="builder-lib-name">${escapeHtml(e.name)}</div>
+            <div class="builder-lib-meta">
+              <span>${CAT_LABEL[e.category]||'Exercise'}</span>
+              <span>·</span>
+              <span>${(e.equipment||[]).join(', ')||'Bodyweight'}</span>
+            </div>
+          </div>
+          <button type="button" class="btn-add-lib" data-badd="${e.id}">+ Add</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Bind Builder Events
+  document.getElementById('bCloseBtn').addEventListener('click', closeBuilder);
+  document.getElementById('bClearBtn').addEventListener('click', () => {
+    builderRoutine.items = [];
+    renderBuilderOverlay();
+  });
+  document.getElementById('bNameInput').addEventListener('input', (e) => {
+    builderRoutine.name = e.target.value;
+  });
+
+  const bCircuitToggle = document.getElementById('bCircuitToggle');
+  if(bCircuitToggle){
+    bCircuitToggle.addEventListener('change', (e) => {
+      builderRoutine.circuit = e.target.checked;
+      renderBuilderOverlay();
+    });
+  }
+
+  overlay.querySelectorAll('#bRoundsWrap .round-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      builderRoutine.circuitRounds = parseInt(chip.dataset.bcrounds, 10);
+      renderBuilderOverlay();
+    });
+  });
+
+  overlay.querySelectorAll('.intensity-stops .intensity-stop-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      builderRoutine.intensity = btn.dataset.bintensity;
+      renderBuilderOverlay();
+    });
+  });
+
+  // Reorder & Remove
+  overlay.querySelectorAll('[data-bmoveup]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.bmoveup, 10);
+      if(idx > 0){
+        const temp = builderRoutine.items[idx];
+        builderRoutine.items[idx] = builderRoutine.items[idx - 1];
+        builderRoutine.items[idx - 1] = temp;
+        renderBuilderOverlay();
+      }
+    });
+  });
+
+  overlay.querySelectorAll('[data-bmovedown]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.bmovedown, 10);
+      if(idx < builderRoutine.items.length - 1){
+        const temp = builderRoutine.items[idx];
+        builderRoutine.items[idx] = builderRoutine.items[idx + 1];
+        builderRoutine.items[idx + 1] = temp;
+        renderBuilderOverlay();
+      }
+    });
+  });
+
+  overlay.querySelectorAll('[data-bdel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.bdel, 10);
+      builderRoutine.items.splice(idx, 1);
+      renderBuilderOverlay();
+    });
+  });
+
+  // Add from Library
+  overlay.querySelectorAll('[data-badd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ex = exercises.find(x => x.id === btn.dataset.badd);
+      if(ex){
+        builderRoutine.items.push({ ...ex, id: uid(), baseId: ex.id });
+        renderBuilderOverlay();
+        showToast(ex.name + ' added');
+      }
+    });
+  });
+
+  // Search & Filter
+  const bSearch = document.getElementById('bSearchInput');
+  if(bSearch){
+    bSearch.addEventListener('input', (e) => {
+      builderRoutine.searchQuery = e.target.value;
+      const bLib = document.getElementById('bLibraryList');
+      if(bLib){
+        const matches = exercises.filter(x => {
+          const matchesCat = builderRoutine.activeCategory === 'all' || x.category === builderRoutine.activeCategory;
+          const matchesSearch = !builderRoutine.searchQuery || x.name.toLowerCase().includes(builderRoutine.searchQuery.toLowerCase()) || (x.equipment||[]).some(eq => eq.toLowerCase().includes(builderRoutine.searchQuery.toLowerCase()));
+          return matchesCat && matchesSearch;
+        });
+        bLib.innerHTML = matches.map(e => `
+          <div class="builder-lib-row">
+            <div class="ex-fig-clean">${buildFigureSVG(patternForExercise(e), 'small mini')}</div>
+            <div class="builder-lib-info">
+              <div class="builder-lib-name">${escapeHtml(e.name)}</div>
+              <div class="builder-lib-meta">
+                <span>${CAT_LABEL[e.category]||'Exercise'}</span>
+                <span>·</span>
+                <span>${(e.equipment||[]).join(', ')||'Bodyweight'}</span>
+              </div>
+            </div>
+            <button type="button" class="btn-add-lib" data-badd="${e.id}">+ Add</button>
+          </div>
+        `).join('');
+        bLib.querySelectorAll('[data-badd]').forEach(b => {
+          b.addEventListener('click', () => {
+            const ex = exercises.find(x => x.id === b.dataset.badd);
+            if(ex){
+              builderRoutine.items.push({ ...ex, id: uid(), baseId: ex.id });
+              renderBuilderOverlay();
+              showToast(ex.name + ' added');
+            }
+          });
+        });
+      }
+    });
+  }
+
+  overlay.querySelectorAll('.builder-filter-chips .builder-filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      builderRoutine.activeCategory = chip.dataset.bcat;
+      renderBuilderOverlay();
+    });
+  });
+
+  // Action Buttons: Load & Start, Save as Profile
+  const bStartNowBtn = document.getElementById('bStartNowBtn');
+  if(bStartNowBtn){
+    bStartNowBtn.addEventListener('click', () => {
+      loadBuilderRoutineToToday(true);
+    });
+  }
+
+  const bSaveProfileBtn = document.getElementById('bSaveProfileBtn');
+  if(bSaveProfileBtn){
+    bSaveProfileBtn.addEventListener('click', async () => {
+      const name = (builderRoutine.name || '').trim() || 'Custom Routine ' + new Date().toLocaleDateString(undefined, {month:'short', day:'numeric'});
+      profiles.push({
+        id: uid(),
+        name: name,
+        mode: 'fixed',
+        targetMinutes: totalMins,
+        targetCount: builderRoutine.items.length,
+        intensity: builderRoutine.intensity,
+        circuit: builderRoutine.circuit,
+        circuitRounds: builderRoutine.circuitRounds,
+        categories: [...new Set(builderRoutine.items.map(i => i.category))],
+        exerciseIds: builderRoutine.items.map(i => i.baseId || i.id)
+      });
+      await saveProfiles();
+      renderProfiles();
+      showToast('Profile "' + name + '" saved!');
+      closeBuilder();
+    });
+  }
+}
+
+function loadBuilderRoutineToToday(autoStart = false){
+  if(builderRoutine.items.length === 0){
+    showToast('Add at least one move to your routine');
+    return;
+  }
+  session.circuit = builderRoutine.circuit;
+  session.circuitRounds = builderRoutine.circuitRounds;
+  session.intensity = builderRoutine.intensity;
+  session.targetCount = builderRoutine.items.length;
+
+  const warmupSec = session.warmup ? (session.warmupSeconds + 10) : 0;
+  const cooldownSec = session.cooldown ? session.cooldownSeconds : 0;
+  const intensity = session.intensity || 'balanced';
+
+  let fullSession = [];
+  if(session.warmup) fullSession.push(makeWarmupItem(session.warmupSeconds));
+
+  if(session.circuit){
+    const rounds = session.circuitRounds || 3;
+    const drinksSec = getDrinksBreakSeconds(intensity);
+    const totalDrinksTime = (rounds > 1) ? ((rounds - 1) * drinksSec) : 0;
+    const availSec = Math.max(60, (session.targetMinutes * 60) - warmupSec - cooldownSec - totalDrinksTime);
+    const totalSlots = builderRoutine.items.length * rounds;
+    const slotSec = Math.floor(availSec / totalSlots);
+    const { work, rest } = getTimingForSlot(slotSec, intensity);
+
+    for(let r = 1; r <= rounds; r++){
+      builderRoutine.items.forEach((ex, exIdx) => {
+        fullSession.push({
+          ...ex,
+          id: 'circuit-' + r + '-' + ex.id,
+          baseId: ex.baseId || ex.id,
+          round: r,
+          totalRounds: rounds,
+          exerciseIndex: exIdx,
+          exerciseTotal: builderRoutine.items.length,
+          workSeconds: work,
+          restSeconds: rest,
+          duration: +(slotSec / 60).toFixed(2),
+          setsReps: `Round ${r}/${rounds}`,
+          isCircuit: true,
+          done: false
+        });
+      });
+      if(r < rounds){
+        fullSession.push(makeDrinksBreakItem(r, r + 1, drinksSec));
+      }
+    }
+  } else {
+    const totalSlots = builderRoutine.items.length;
+    const availSec = Math.max(60, (session.targetMinutes * 60) - warmupSec - cooldownSec);
+    const slotSec = Math.floor(availSec / totalSlots);
+    const { work, rest } = getTimingForSlot(slotSec, intensity);
+
+    builderRoutine.items.forEach((ex, exIdx) => {
+      fullSession.push({
+        ...ex,
+        id: uid(),
+        baseId: ex.baseId || ex.id,
+        exerciseIndex: exIdx,
+        exerciseTotal: builderRoutine.items.length,
+        workSeconds: work,
+        restSeconds: rest,
+        duration: +(slotSec / 60).toFixed(2),
+        setsReps: `${work}s work / ${rest}s rest`,
+        isCircuit: false,
+        done: false
+      });
+    });
+  }
+
+  if(session.cooldown) fullSession.push(makeCooldownItem(session.cooldownSeconds));
+
+  session.items = fullSession;
+  closeBuilder();
+  renderToday();
+
+  if(autoStart){
+    startWorkout();
+  } else {
+    showToast('Loaded custom routine into Today!');
+  }
+}
+
 /* ---------------- Init ---------------- */
 async function init(){
   await loadData();
@@ -1830,6 +2220,10 @@ async function init(){
   document.querySelectorAll('.tab').forEach(t=>{
     t.addEventListener('click', ()=>setView(t.dataset.view));
   });
+
+  const openBBtn = document.getElementById('openBuilderBtn');
+  if(openBBtn) openBBtn.addEventListener('click', openBuilder);
+
   renderToday();
   renderLibrary();
   renderProfiles();

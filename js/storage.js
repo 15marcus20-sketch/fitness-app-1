@@ -9,6 +9,17 @@ async function loadData(){
     const raw = localStorage.getItem('on_track_exercises');
     if (raw) {
       exercises = JSON.parse(raw);
+      // Seamlessly merge any new default exercises missing from stored list
+      const existingNames = new Set(exercises.map(e => e.name.toLowerCase().trim()));
+      let added = false;
+      DEFAULT_EXERCISES.forEach(def => {
+        if (!existingNames.has(def.name.toLowerCase().trim())) {
+          exercises.push({ ...def, id: uid() });
+          existingNames.add(def.name.toLowerCase().trim());
+          added = true;
+        }
+      });
+      if (added) saveExercises();
     } else {
       exercises = DEFAULT_EXERCISES.map(x => ({...x, id: uid()}));
       saveExercises();

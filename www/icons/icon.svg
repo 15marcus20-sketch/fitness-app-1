@@ -1,25 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background subtle gradient -->
-    <radialGradient id="bgGrad" cx="50%" cy="40%" r="65%">
-      <stop offset="0%" stop-color="#1f242d"/>
-      <stop offset="100%" stop-color="#0b0d10"/>
+    <!-- Background subtle radial gradient in deep slate -->
+    <radialGradient id="bgGrad" cx="50%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#020617"/>
     </radialGradient>
     
-    <!-- Red/Orange vibrant gradient -->
-    <linearGradient id="redAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ff6b4a"/>
-      <stop offset="100%" stop-color="#ff3333"/>
+    <!-- Athletic Teal vibrant gradient -->
+    <linearGradient id="tealAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="50%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0D9488"/>
     </linearGradient>
 
-    <!-- Neon cyan/mint accent -->
-    <linearGradient id="neonMint" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38ef7d"/>
-      <stop offset="100%" stop-color="#11998e"/>
+    <!-- Energetic Mint accent -->
+    <linearGradient id="mintAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
     </linearGradient>
 
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -27,51 +28,49 @@
     </filter>
   </defs>
 
-  <!-- Dark Rounded Container (Safe for maskable & square icons) -->
+  <!-- Deep Slate Rounded Container (Safe for maskable & square icons) -->
   <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
   
-  <!-- Outer subtle precision ring -->
-  <circle cx="256" cy="256" r="190" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
-  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#redAccent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="350"/>
+  <!-- Outer precision calibration ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#tealAccent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="380"/>
 
-  <!-- Ticking graduation tickmarks -->
-  <g stroke="rgba(255,255,255,0.25)" stroke-width="4" stroke-linecap="round">
+  <!-- Ticking graduation tickmarks in soft mint/teal -->
+  <g stroke="rgba(45,212,191,0.3)" stroke-width="4" stroke-linecap="round">
     <line x1="256" y1="80" x2="256" y2="94"/>
     <line x1="256" y1="418" x2="256" y2="432"/>
     <line x1="80" y1="256" x2="94" y2="256"/>
     <line x1="418" y1="256" x2="432" y2="256"/>
   </g>
 
-  <!-- Geometric Dynamic Athletic Monogram / Pulse Runner Symbol -->
-  <!-- Lightning bolt / dynamic track Chevron -->
+  <!-- Dynamic Athletic Track & Pulse Runner Symbol -->
   <g filter="url(#glow)">
-    <!-- Dynamic Track Lines -->
-    <path d="M150 310 L220 170 L290 270 L365 150" 
+    <path d="M150 305 L220 170 L290 265 L365 150" 
           fill="none" 
-          stroke="url(#redAccent)" 
+          stroke="url(#tealAccent)" 
           stroke-width="26" 
           stroke-linecap="round" 
           stroke-linejoin="round"/>
 
-    <!-- Speed Accents / Track Dots -->
-    <circle cx="365" cy="150" r="16" fill="#ff4d4d"/>
-    <circle cx="150" cy="310" r="14" fill="#38ef7d"/>
+    <!-- Track Speed Nodes (Mint & Teal) -->
+    <circle cx="365" cy="150" r="16" fill="url(#mintAccent)"/>
+    <circle cx="150" cy="305" r="14" fill="#14B8A6"/>
   </g>
 
-  <!-- Brand Typography -->
-  <text x="256" y="380" 
-        font-family="-apple-system, BlinkMacSystemFont, 'Barlow Condensed', 'Inter', sans-serif" 
-        font-weight="900" 
-        font-size="44" 
-        letter-spacing="9" 
-        fill="#ffffff" 
+  <!-- Brand Typography: Modern Studio Minimalist -->
+  <text x="256" y="378" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" 
+        font-weight="800" 
+        font-size="42" 
+        letter-spacing="8" 
+        fill="#FFFFFF" 
         text-anchor="middle">ON TRACK</text>
 
   <text x="256" y="405" 
-        font-family="-apple-system, BlinkMacSystemFont, 'IBM Plex Mono', monospace" 
-        font-weight="600" 
-        font-size="16" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" 
+        font-weight="700" 
+        font-size="14" 
         letter-spacing="5" 
-        fill="#ff5555" 
-        text-anchor="middle">FITNESS</text>
+        fill="#2DD4BF" 
+        text-anchor="middle">STUDIO</text>
 </svg>

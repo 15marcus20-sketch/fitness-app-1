@@ -27,9 +27,11 @@
   fill: none;
 }
 .illustration.mini .seg {
-  stroke: var(--meter);
+  stroke: var(--accent);
+  stroke-width: 6.5;
 }
 .illustration.small .seg {
+  stroke: var(--accent);
   stroke-width: 7;
 }
 
